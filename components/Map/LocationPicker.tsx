@@ -15,6 +15,9 @@ function LocationMarker({ onLocationSelect, position }: { onLocationSelect: (lat
     click(e) {
       onLocationSelect(e.latlng.lat, e.latlng.lng);
     },
+    contextmenu(e) {
+      onLocationSelect(e.latlng.lat, e.latlng.lng);
+    },
   });
 
   return position === null ? null : (
@@ -65,6 +68,8 @@ export default function LocationPicker({ onLocationSelect, initialLocation }: Lo
         center={defaultCenter} 
         zoom={13} 
         scrollWheelZoom={true}
+        // @ts-expect-error: tap is a valid Leaflet option but might not be in the current MapContainer types
+        tap={false}
         style={{ height: '100%', width: '100%' }}
       >
         <TileLayer

@@ -16,15 +16,49 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #013644;
+    --foreground: #ffffff;
   }
+}
+
+/* Global Scrollbar Reset */
+html, body, * {
+  scrollbar-width: thin !important;
+  scrollbar-color: #98e32f rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Chrome, Edge, Safari */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-radius: 10px !important;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #98e32f !important;
+  border-radius: 10px !important;
+  border: 2px solid transparent !important;
+  background-clip: content-box !important;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #86c929 !important;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.custom-scrollbar {
+  overflow-y: auto !important;
 }
 
 button,

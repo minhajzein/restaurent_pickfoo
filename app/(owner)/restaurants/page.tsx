@@ -558,7 +558,7 @@ export default function OwnerRestaurantsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-[#013644]/95 backdrop-blur-md" onClick={handleCancel}></div>
           
-          <div className="relative bg-[#002833] border border-white/10 w-full sm:max-w-6xl h-full sm:h-auto lg:h-[85vh] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col sm:max-h-[90vh]">
+          <div className="relative bg-[#002833] border border-white/10 w-full sm:max-w-3xl h-full sm:h-auto lg:h-[90vh] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col sm:max-h-[95vh]">
             <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-hidden flex flex-col">
               {/* Modal Header */}
               <div className="px-6 sm:px-8 py-4 sm:py-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02] shrink-0">
@@ -580,8 +580,8 @@ export default function OwnerRestaurantsPage() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
-                <div className="w-full lg:w-[60%] p-4 sm:p-8 lg:border-r border-white/5 lg:overflow-y-auto lg:h-full custom-scrollbar">
+              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+                <div className="p-4 sm:p-8 space-y-10">
                   <div className="space-y-8 sm:space-y-10">
                     <section>
                       <div className="flex items-center gap-3 mb-6">
@@ -759,6 +759,46 @@ export default function OwnerRestaurantsPage() {
                         </div>
                       </div>
                     </section>
+                    
+                    {/* Map Selection Integrated */}
+                    <section className="space-y-6">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10"></div>
+                        <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#98E32F]">Map Precision</h4>
+                        <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/10"></div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                           <p className="text-[10px] sm:text-xs text-white/40">Drop a pin exactly where your restaurant entrance is located.</p>
+                           {selectedLocation && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-[#98E32F]/10 rounded-xl self-start sm:self-auto border border-[#98E32F]/20">
+                              <div className="w-2 h-2 rounded-full bg-[#98E32F] animate-pulse"></div>
+                              <span className="text-[10px] font-mono font-bold text-[#98E32F]">
+                                {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="h-[300px] sm:h-[400px] relative rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 shadow-inner group">
+                          <LocationPicker 
+                            initialLocation={selectedLocation ? [selectedLocation.lat, selectedLocation.lng] : undefined}
+                            onLocationSelect={(lat, lng) => setSelectedLocation({ lat, lng })}
+                          />
+                          <div className="absolute inset-0 border-2 border-[#98E32F]/0 group-focus-within:border-[#98E32F]/20 transition-all pointer-events-none rounded-2xl sm:rounded-3xl"></div>
+                        </div>
+
+                        <div className="bg-[#98E32F]/[0.05] border border-[#98E32F]/10 p-4 rounded-2xl">
+                          <div className="flex items-start gap-3">
+                            <AlertCircle size={18} className="text-[#98E32F] shrink-0 mt-0.5" />
+                            <p className="text-[11px] text-white/60 leading-relaxed font-medium">
+                              This precise location helps delivery partners find you faster. Please ensure the pin is right on your entrance.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </section>
 
                     <section className="bg-[#98E32F]/[0.02] border border-[#98E32F]/10 rounded-[2rem] p-8">
                       <div className="flex items-center gap-3 mb-6">
@@ -866,45 +906,6 @@ export default function OwnerRestaurantsPage() {
                         </div>
                       </div>
                     </section>
-                  </div>
-                </div>
-
-                <div className="flex lg:w-[40%] flex-col bg-white/[0.01] border-t lg:border-t-0 border-white/5 overflow-y-auto lg:overflow-hidden custom-scrollbar shrink-0 lg:shrink lg:h-full">
-                  <div className="flex-1 flex flex-col relative lg:h-full">
-                    <div className="p-6 sm:p-8 lg:absolute lg:top-0 lg:left-0 lg:right-0 lg:z-10 lg:bg-gradient-to-b lg:from-[#002833] lg:to-transparent pointer-events-none">
-                      <div className="mb-2">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2 pointer-events-auto">
-                          <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#98E32F]">Map Precision</h4>
-                          {selectedLocation && (
-                            <div className="flex items-center gap-2 px-3 py-1 bg-[#98E32F]/10 rounded-lg">
-                              <div className="w-2 h-2 rounded-full bg-[#98E32F] animate-pulse"></div>
-                              <span className="text-[10px] font-mono text-[#98E32F]">
-                                {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-xs text-white/40 hidden lg:block pointer-events-auto">Drop a pin exactly where your restaurant entrance is located.</p>
-                    </div>
-
-                    <div className="flex-1 min-h-[400px] relative lg:rounded-none overflow-hidden border-white/10 shadow-2xl w-full lg:h-full">
-                      <LocationPicker 
-                        initialLocation={selectedLocation ? [selectedLocation.lat, selectedLocation.lng] : undefined}
-                        onLocationSelect={(lat, lng) => setSelectedLocation({ lat, lng })}
-                      />
-                      <div className="absolute bottom-6 left-6 right-6 z-10">
-                        <div className="bg-[#002833]/90 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl w-full">
-                          <div className="flex items-start gap-3">
-                            <AlertCircle size={18} className="text-[#98E32F] shrink-0 mt-0.5" />
-                            <p className="text-[11px] text-white/60 leading-relaxed">
-                              This location will be used for delivery calculations. Please ensure the marker is placed accurately on the street map.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
                   </div>
                 </div>
               </div>
