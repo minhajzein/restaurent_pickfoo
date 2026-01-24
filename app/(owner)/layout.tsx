@@ -72,14 +72,15 @@ export default function OwnerLayout({
       <aside 
         className={`
           fixed inset-y-0 left-0 z-50 bg-[#002833] border-r border-white/5 flex flex-col
-          transition-transform duration-300 ease-in-out
+          transition-[width,transform] duration-300 ease-in-out
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:relative lg:translate-x-0
-          ${isSidebarOpen ? 'w-64' : 'w-64 lg:w-20'}
+          ${isSidebarOpen ? 'w-64' : 'w-20'}
         `}
       >
-        <div className="p-6 flex items-center justify-between">
-          {(isSidebarOpen || isMobileMenuOpen) ? (
+        <div className="p-6 h-20 flex items-center relative overflow-hidden">
+          {/* Logo - Expanded State */}
+          <div className={`transition-all duration-300 ease-in-out ${isSidebarOpen || isMobileMenuOpen ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10 pointer-events-none'}`}>
             <Link href="/" className="relative h-8 w-32 block">
               <Image 
                 src="/logo.png" 
@@ -89,25 +90,33 @@ export default function OwnerLayout({
                 priority
               />
             </Link>
-          ) : (
-            <div className="lg:w-8 h-8 flex items-center justify-center">
-              <div className="w-8 h-8 rounded-lg bg-[#98E32F]/10 flex items-center justify-center">
-                <Store size={18} className="text-[#98E32F]" />
+          </div>
+
+          {/* Favicon - Minimized State */}
+          <div className={`absolute left-5 transition-all duration-300 ease-in-out ${!isSidebarOpen && !isMobileMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-50 pointer-events-none'}`}>
+            <Link href="/" className="relative w-10 h-10 flex items-center justify-center group/favicon">
+              <div className="absolute inset-0 bg-[#98E32F]/10 rounded-xl blur-sm group-hover/favicon:bg-[#98E32F]/20 transition-colors" />
+              <div className="relative w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
+                <Image 
+                  src="/favicon.ico" 
+                  alt="Pickfoo" 
+                  width={24}
+                  height={24}
+                  className="object-contain"
+                />
               </div>
-            </div>
+            </Link>
+          </div>
+          
+          {/* Mobile close button */}
+          {isMobileMenuOpen && (
+            <button 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="lg:hidden p-2 absolute right-6 hover:bg-white/5 rounded-lg text-[#98E32F]"
+            >
+              <X size={20} />
+            </button>
           )}
-          <button 
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="hidden lg:flex p-2 hover:bg-white/5 rounded-lg text-[#98E32F] transition-colors"
-          >
-            {isSidebarOpen ? <X size={20} /> : <MenuIcon size={20} />}
-          </button>
-          <button 
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="lg:hidden p-2 hover:bg-white/5 rounded-lg text-[#98E32F]"
-          >
-            <X size={20} />
-          </button>
         </div>
 
         <nav className="flex-1 px-4 space-y-2 py-4 overflow-y-auto">
@@ -117,18 +126,22 @@ export default function OwnerLayout({
               <Link 
                 key={item.name}
                 href={item.href}
-                className={`flex items-center gap-4 p-3 rounded-xl transition-all duration-200 group relative ${
+                className={`flex items-center p-3 rounded-xl transition-all duration-300 group relative ${
                   isActive 
                     ? 'bg-[#98E32F] text-[#013644] shadow-[0_0_20px_rgba(152,227,47,0.2)]' 
                     : 'hover:bg-[#98E32F]/10 hover:text-[#98E32F] text-white/60'
                 }`}
               >
-                <item.icon size={22} className={`min-w-[22px] ${isActive ? 'scale-110' : ''}`} />
-                {(isSidebarOpen || isMobileMenuOpen) && (
-                  <span className="font-bold text-sm tracking-tight">{item.name}</span>
-                )}
-                {isActive && (isSidebarOpen || isMobileMenuOpen) && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full" />
+                <div className={`flex items-center justify-center transition-all duration-300 ${isSidebarOpen || isMobileMenuOpen ? 'w-auto' : 'w-full'}`}>
+                  <item.icon size={22} className={`min-w-[22px] transition-transform duration-300 ${isActive ? 'scale-110' : ''}`} />
+                </div>
+                <span className={`font-bold text-sm tracking-tight whitespace-nowrap transition-all duration-300 overflow-hidden ${
+                  isSidebarOpen || isMobileMenuOpen ? 'opacity-100 max-w-[200px] ml-4' : 'opacity-0 max-w-0 ml-0'
+                }`}>
+                  {item.name}
+                </span>
+                {isActive && (
+                  <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full transition-opacity duration-300 ${isSidebarOpen || isMobileMenuOpen ? 'opacity-100' : 'opacity-0'}`} />
                 )}
               </Link>
             );
@@ -138,10 +151,16 @@ export default function OwnerLayout({
         <div className="p-4 border-t border-white/5">
           <button 
             onClick={() => logout()}
-            className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-red-500/10 text-red-400 transition-colors"
+            className="w-full flex items-center p-3 rounded-xl hover:bg-red-500/10 text-red-400 transition-all duration-300"
           >
-            <LogOut size={22} className="min-w-[22px]" />
-            {(isSidebarOpen || isMobileMenuOpen) && <span className="font-medium">Logout</span>}
+            <div className={`flex items-center justify-center transition-all duration-300 ${isSidebarOpen || isMobileMenuOpen ? 'w-auto' : 'w-full'}`}>
+              <LogOut size={22} className="min-w-[22px]" />
+            </div>
+            <span className={`font-medium whitespace-nowrap transition-all duration-300 overflow-hidden ${
+              isSidebarOpen || isMobileMenuOpen ? 'opacity-100 max-w-[200px] ml-4' : 'opacity-0 max-w-0 ml-0'
+            }`}>
+              Logout
+            </span>
           </button>
         </div>
       </aside>
@@ -150,6 +169,24 @@ export default function OwnerLayout({
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="h-16 border-b border-white/5 bg-[#013644]/50 backdrop-blur-md sticky top-0 z-10 px-4 sm:px-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
+            {/* Desktop toggle */}
+            <button 
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="hidden lg:flex p-2 -ml-2 hover:bg-white/5 rounded-lg text-[#98E32F] transition-all duration-300 items-center justify-center w-10 h-10"
+            >
+              <div className="relative w-6 h-6">
+                <MenuIcon 
+                  size={24} 
+                  className={`absolute inset-0 transition-all duration-500 ${isSidebarOpen ? 'opacity-0 scale-50 rotate-90' : 'opacity-100 scale-100 rotate-0'}`} 
+                />
+                <X 
+                  size={24} 
+                  className={`absolute inset-0 transition-all duration-500 ${isSidebarOpen ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-50 -rotate-90'}`} 
+                />
+              </div>
+            </button>
+
+            {/* Mobile toggle */}
             <button 
               onClick={() => setIsMobileMenuOpen(true)}
               className="lg:hidden p-2 -ml-2 hover:bg-white/5 rounded-lg text-[#98E32F]"
