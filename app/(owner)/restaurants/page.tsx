@@ -377,14 +377,14 @@ export default function OwnerRestaurantsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-bold">My Restaurants</h2>
-          <p className="text-white/60">Manage your business locations and their status.</p>
+          <h2 className="text-2xl sm:text-3xl font-bold">My Restaurants</h2>
+          <p className="text-white/60 text-sm sm:text-base">Manage your business locations and their status.</p>
         </div>
         <button 
           onClick={() => setIsAddModalOpen(true)}
-          className="bg-[#98E32F] text-[#013644] px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-[#86c929] transition-all transform hover:scale-105 active:scale-95"
+          className="bg-[#98E32F] text-[#013644] px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-[#86c929] transition-all transform hover:scale-105 active:scale-95 w-full sm:w-auto"
         >
           <Plus size={20} />
           Add Restaurant
@@ -393,13 +393,13 @@ export default function OwnerRestaurantsPage() {
 
       {/* Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white/5 border border-white/10 rounded-[2.5rem] h-[400px] animate-pulse"></div>
+            <div key={i} className="bg-white/5 border border-white/10 rounded-3xl sm:rounded-[2.5rem] h-[400px] animate-pulse"></div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
           {restaurants?.map((restaurant: Restaurant) => (
             <div key={restaurant._id} className="bg-white/5 border border-white/10 rounded-[2.5rem] overflow-hidden group hover:border-[#98E32F]/30 transition-all">
               <div className="relative h-48">
@@ -542,33 +542,33 @@ export default function OwnerRestaurantsPage() {
           {/* Add New Placeholder */}
           <button 
             onClick={() => setIsAddModalOpen(true)}
-            className="border-2 border-dashed border-white/10 rounded-[2.5rem] flex flex-col items-center justify-center p-8 hover:border-[#98E32F]/50 hover:bg-[#98E32F]/5 group transition-all h-full min-h-[400px]"
+            className="border-2 border-dashed border-white/10 rounded-3xl sm:rounded-[2.5rem] flex flex-col items-center justify-center p-8 hover:border-[#98E32F]/50 hover:bg-[#98E32F]/5 group transition-all h-full min-h-[300px] sm:min-h-[400px]"
           >
             <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Plus size={32} className="text-white/20 group-hover:text-[#98E32F]" />
             </div>
-            <p className="text-xl font-bold text-white/40 group-hover:text-white">Add New Restaurant</p>
-            <p className="text-sm text-white/20 mt-1">Expand your business</p>
+            <p className="text-lg sm:text-xl font-bold text-white/40 group-hover:text-white">Add New Restaurant</p>
+            <p className="text-xs sm:text-sm text-white/20 mt-1">Expand your business</p>
           </button>
         </div>
       )}
 
       {/* Add Restaurant Modal (Overlay) */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-[#013644]/95 backdrop-blur-md" onClick={handleCancel}></div>
           
-          <div className="relative bg-[#002833] border border-white/10 w-full max-w-6xl rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="relative bg-[#002833] border border-white/10 w-full sm:max-w-6xl h-full sm:h-auto sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col sm:max-h-[90vh]">
             <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-hidden flex flex-col">
               {/* Modal Header */}
-              <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02] shrink-0">
+              <div className="px-6 sm:px-8 py-4 sm:py-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02] shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-[#98E32F]/20 rounded-xl">
-                    <Store size={24} className="text-[#98E32F]" />
+                    <Store size={20} className="text-[#98E32F] sm:w-6 sm:h-6" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold">{editingId ? 'Edit Restaurant' : 'Register Restaurant'}</h3>
-                    <p className="text-white/40 text-[11px] uppercase tracking-widest font-bold">Business Details</p>
+                    <h3 className="text-lg sm:text-xl font-bold">{editingId ? 'Edit Restaurant' : 'Register Restaurant'}</h3>
+                    <p className="text-white/40 text-[9px] sm:text-[11px] uppercase tracking-widest font-bold">Business Details</p>
                   </div>
                 </div>
                 <button
@@ -580,9 +580,9 @@ export default function OwnerRestaurantsPage() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-hidden flex">
-                <div className="w-full lg:w-[60%] overflow-y-auto p-8 border-r border-white/5 custom-scrollbar">
-                  <div className="space-y-10">
+              <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+                <div className="w-full lg:w-[60%] overflow-y-auto p-6 sm:p-8 border-r border-white/5 custom-scrollbar">
+                  <div className="space-y-8 sm:space-y-10">
                     <section>
                       <div className="flex items-center gap-3 mb-6">
                         <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10"></div>
@@ -594,11 +594,11 @@ export default function OwnerRestaurantsPage() {
                         <div className="md:col-span-2">
                           <label className="text-xs font-bold text-white/50 mb-2 block ml-1 uppercase tracking-wider">Restaurant Name</label>
                           <div className="relative group">
-                            <Store className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${errors.name ? 'text-red-500' : 'text-white/20 group-focus-within:text-[#98E32F]'}`} size={18} />
+                            <Store className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${errors.name ? 'text-red-500' : 'text-white/20 group-focus-within:text-[#98E32F]'}`} size={16} />
                             <input 
                               {...register('name')}
                               type="text" 
-                              className={`w-full bg-white/5 border rounded-2xl pl-12 pr-4 py-4 focus:bg-[#98E32F]/5 outline-none transition-all placeholder:text-white/10 ${errors.name ? 'border-red-500/50' : 'border-white/10 focus:border-[#98E32F]/50'}`}
+                              className={`w-full bg-white/5 border rounded-2xl pl-12 pr-4 py-3 sm:py-4 focus:bg-[#98E32F]/5 outline-none transition-all placeholder:text-white/10 text-sm sm:text-base ${errors.name ? 'border-red-500/50' : 'border-white/10 focus:border-[#98E32F]/50'}`}
                               placeholder="e.g. Malabar Kitchen & Grill" 
                             />
                           </div>
@@ -869,10 +869,10 @@ export default function OwnerRestaurantsPage() {
                   </div>
                 </div>
 
-                <div className="hidden lg:flex lg:w-[40%] flex-col bg-white/[0.01]">
-                  <div className="p-8 flex-1 flex flex-col">
+                <div className="flex lg:w-[40%] flex-col bg-white/[0.01] border-t lg:border-t-0 border-white/5 max-h-[400px] lg:max-h-full overflow-y-auto lg:overflow-visible">
+                  <div className="p-6 sm:p-8 flex-1 flex flex-col">
                     <div className="mb-6">
-                      <div className="flex items-center justify-between mb-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                           <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#98E32F]">Map Precision</h4>
                           {selectedLocation && (
                             <div className="flex items-center gap-2 px-3 py-1 bg-[#98E32F]/10 rounded-lg">
@@ -928,25 +928,25 @@ export default function OwnerRestaurantsPage() {
                 </div>
               </div>
 
-              <div className="px-8 py-6 border-t border-white/5 flex items-center justify-between bg-white/[0.02]">
-                <div className="flex items-center gap-2 text-white/30 text-[10px] font-bold uppercase tracking-widest">
+              <div className="px-6 sm:px-8 py-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6 bg-white/[0.02]">
+                <div className="flex items-center gap-2 text-white/30 text-[10px] font-bold uppercase tracking-widest order-2 sm:order-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-white/20"></div>
                   Requires Admin Approval
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 w-full sm:w-auto order-1 sm:order-2">
                   <button 
                     type="button"
                     onClick={handleCancel}
-                    className="px-8 py-3 rounded-2xl font-bold text-white/40 hover:text-white hover:bg-white/5 transition-all text-sm"
+                    className="flex-1 sm:flex-none px-6 sm:px-8 py-3 rounded-2xl font-bold text-white/40 hover:text-white hover:bg-white/5 transition-all text-sm"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit"
                     disabled={isSubmitting}
-                    className="bg-[#98E32F] text-[#013644] px-10 py-3 rounded-2xl font-black text-sm hover:shadow-[0_0_30px_rgba(152,227,47,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-[2] sm:flex-none bg-[#98E32F] text-[#013644] px-6 sm:px-10 py-3 rounded-2xl font-black text-sm hover:shadow-[0_0_30px_rgba(152,227,47,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : (editingId ? 'Update Restaurant' : 'Submit Registration')} <ChevronRight size={18} />
+                    {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : (editingId ? 'Update' : 'Submit')} <ChevronRight size={18} />
                   </button>
                 </div>
               </div>

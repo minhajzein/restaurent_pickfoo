@@ -79,42 +79,41 @@ export default function RestaurantDashboardPage() {
   return (
     <div className="space-y-8">
       {/* Header / Banner */}
-      <div className="relative h-64 rounded-[3rem] overflow-hidden border border-white/10 group">
+      <div className="relative min-h-[300px] sm:h-64 rounded-3xl sm:rounded-[3rem] overflow-hidden border border-white/10 group">
         <Image 
           src={restaurant.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4'}
           alt={restaurant.name}
           fill
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#013644] via-[#013644]/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#013644] via-[#013644]/60 to-transparent sm:via-transparent sm:to-transparent"></div>
+        <div className="absolute inset-0 bg-[#013644]/40 sm:hidden"></div>
         
-        <div className="absolute bottom-0 left-0 right-0 p-10 flex flex-col md:flex-row items-end justify-between gap-6">
-          <div className="flex-1">
-             <div className="flex items-center gap-4 mb-3">
-               <Link href="/restaurants" className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-all text-white backdrop-blur-md">
-                 <ArrowLeft size={20} />
-               </Link>
-               <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md border ${
-                 restaurant.status === 'active' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'
-               }`}>
-                 {restaurant.status}
-               </span>
-             </div>
-             <h1 className="text-4xl font-black text-white mb-2 tracking-tight">{restaurant.name}</h1>
-             <div className="flex items-center gap-6 text-sm text-white/60">
-                <div className="flex items-center gap-2">
-                   <MapPin size={16} className="text-[#98E32F]" />
-                   {restaurant.address.street}, {restaurant.address.city}
-                </div>
-                <div className="flex items-center gap-2">
-                   <Phone size={16} className="text-[#98E32F]" />
-                   {restaurant.contactNumber}
-                </div>
-             </div>
-          </div>
-          
-          <div className="flex gap-3">
-             {/* Action Buttons could go here */}
+        <div className="absolute inset-0 p-6 sm:p-10 flex flex-col justify-end">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="flex-1 space-y-4 sm:space-y-0">
+               <div className="flex items-center gap-4 mb-3">
+                 <Link href="/restaurants" className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-all text-white backdrop-blur-md">
+                   <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
+                 </Link>
+                 <span className={`px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider backdrop-blur-md border ${
+                   restaurant.status === 'active' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'
+                 }`}>
+                   {restaurant.status}
+                 </span>
+               </div>
+               <h1 className="text-3xl sm:text-4xl font-black text-white mb-2 tracking-tight leading-tight">{restaurant.name}</h1>
+               <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-xs sm:text-sm text-white/80 sm:text-white/60">
+                  <div className="flex items-center gap-2">
+                     <MapPin size={14} className="text-[#98E32F] shrink-0" />
+                     <span className="truncate">{restaurant.address.street}, {restaurant.address.city}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                     <Phone size={14} className="text-[#98E32F] shrink-0" />
+                     {restaurant.contactNumber}
+                  </div>
+               </div>
+            </div>
           </div>
         </div>
       </div>
@@ -140,34 +139,34 @@ export default function RestaurantDashboardPage() {
       {/* Content Area */}
       {activeTab === 'menu' && (
         <div className="space-y-6">
-           <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold flex items-center gap-3">
-                <UtensilsCrossed className="text-[#98E32F]" /> 
+           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <h2 className="text-lg sm:text-xl font-bold flex items-center gap-3">
+                <UtensilsCrossed className="text-[#98E32F]" size={20} /> 
                 Active Menu 
-                <span className="text-sm font-normal text-white/40 bg-white/5 px-2 py-0.5 rounded-lg border border-white/5">{restaurantItems?.length || 0} Items</span>
+                <span className="text-[10px] sm:text-xs font-normal text-white/40 bg-white/5 px-2 py-0.5 rounded-lg border border-white/5 whitespace-nowrap">{restaurantItems?.length || 0} Items</span>
               </h2>
 
-              <div className="relative group w-64">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#98E32F] transition-colors" size={18} />
+              <div className="relative group w-full sm:w-64">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#98E32F] transition-colors" size={16} />
                 <input 
-                  type="text" 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search items..." 
-                  className="w-full bg-[#002833] border border-white/10 rounded-2xl pl-12 pr-4 py-3 focus:border-[#98E32F]/50 outline-none transition-all placeholder:text-white/20 text-sm"
+                   type="text" 
+                   value={searchQuery}
+                   onChange={(e) => setSearchQuery(e.target.value)}
+                   placeholder="Search items..." 
+                   className="w-full bg-[#002833] border border-white/10 rounded-2xl pl-12 pr-4 py-2.5 sm:py-3 focus:border-[#98E32F]/50 outline-none transition-all placeholder:text-white/20 text-sm"
                 />
               </div>
            </div>
 
            {restaurantItems?.length === 0 ? (
-             <div className="bg-white/5 border border-dashed border-white/10 rounded-[2rem] p-12 text-center">
-                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 text-white/20">
-                  <UtensilsCrossed size={32} />
+             <div className="bg-white/5 border border-dashed border-white/10 rounded-3xl sm:rounded-[2rem] p-8 sm:p-12 text-center">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 text-white/20">
+                  <UtensilsCrossed size={28} className="sm:w-8 sm:h-8" />
                 </div>
-                <h3 className="text-xl font-bold mb-2">No Items Assigned</h3>
-                <p className="text-white/40 max-w-md mx-auto mb-6">This restaurant doesn&apos;t have any menu items assigned to it yet. Go to the main Menu Library to assign items.</p>
+                <h3 className="text-lg sm:text-xl font-bold mb-2">No Items Assigned</h3>
+                <p className="text-white/40 max-w-md mx-auto mb-6 text-sm">This restaurant doesn&apos;t have any menu items assigned to it yet. Go to the main Menu Library to assign items.</p>
 
-                <Link href="/menu" className="inline-flex items-center gap-2 bg-[#98E32F] text-[#013644] px-6 py-3 rounded-xl font-bold hover:bg-[#86c929] transition-all">
+                <Link href="/menu" className="inline-flex items-center gap-2 bg-[#98E32F] text-[#013644] px-6 py-3 rounded-xl font-bold hover:bg-[#86c929] transition-all text-sm">
                    Go to Menu Library <ArrowLeft size={16} className="rotate-180" />
                 </Link>
              </div>

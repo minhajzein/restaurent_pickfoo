@@ -27,12 +27,19 @@ export default function OwnerLayout({
 
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (isInitialized && (!isAuthenticated || user?.role !== 'owner')) {
       router.push('/login');
     }
   }, [isInitialized, isAuthenticated, user, router]);
+
+  // Close mobile menu on path change
+  useEffect(() => {
+    const timer = setTimeout(() => setIsMobileMenuOpen(false), 0);
+    return () => clearTimeout(timer);
+  }, [pathname]);
 
   if (!isInitialized || !user || user.role !== 'owner') {
     return (
@@ -52,15 +59,27 @@ export default function OwnerLayout({
   ];
 
   return (
-    <div className="h-dvh bg-[#013644] text-white flex">
+    <div className="h-dvh bg-[#013644] text-white flex overflow-hidden">
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside 
-        className={`${
-          isSidebarOpen ? 'w-64' : 'w-20'
-        } transition-all duration-300 bg-[#002833] border-r border-white/5 flex flex-col`}
+        className={`
+          fixed inset-y-0 left-0 z-50 bg-[#002833] border-r border-white/5 flex flex-col
+          transition-transform duration-300 ease-in-out
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+          lg:relative lg:translate-x-0
+          ${isSidebarOpen ? 'w-64' : 'w-64 lg:w-20'}
+        `}
       >
         <div className="p-6 flex items-center justify-between">
-          {isSidebarOpen && (
+          {(isSidebarOpen || isMobileMenuOpen) ? (
             <Link href="/" className="relative h-8 w-32 block">
               <Image 
                 src="/logo.png" 
@@ -70,16 +89,28 @@ export default function OwnerLayout({
                 priority
               />
             </Link>
+          ) : (
+            <div className="lg:w-8 h-8 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-[#98E32F]/10 flex items-center justify-center">
+                <Store size={18} className="text-[#98E32F]" />
+              </div>
+            </div>
           )}
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-2 hover:bg-white/5 rounded-lg text-[#98E32F]"
+            className="hidden lg:flex p-2 hover:bg-white/5 rounded-lg text-[#98E32F] transition-colors"
           >
             {isSidebarOpen ? <X size={20} /> : <MenuIcon size={20} />}
           </button>
+          <button 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="lg:hidden p-2 hover:bg-white/5 rounded-lg text-[#98E32F]"
+          >
+            <X size={20} />
+          </button>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 py-4">
+        <nav className="flex-1 px-4 space-y-2 py-4 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -93,8 +124,10 @@ export default function OwnerLayout({
                 }`}
               >
                 <item.icon size={22} className={`min-w-[22px] ${isActive ? 'scale-110' : ''}`} />
-                {isSidebarOpen && <span className="font-bold text-sm tracking-tight">{item.name}</span>}
-                {isActive && (
+                {(isSidebarOpen || isMobileMenuOpen) && (
+                  <span className="font-bold text-sm tracking-tight">{item.name}</span>
+                )}
+                {isActive && (isSidebarOpen || isMobileMenuOpen) && (
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full" />
                 )}
               </Link>
@@ -108,27 +141,41 @@ export default function OwnerLayout({
             className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-red-500/10 text-red-400 transition-colors"
           >
             <LogOut size={22} className="min-w-[22px]" />
-            {isSidebarOpen && <span className="font-medium">Logout</span>}
+            {(isSidebarOpen || isMobileMenuOpen) && <span className="font-medium">Logout</span>}
           </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <header className="h-16 border-b border-white/5 bg-[#013644]/50 backdrop-blur-md sticky top-0 z-10 px-8 flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Owner Dashboard</h1>
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header className="h-16 border-b border-white/5 bg-[#013644]/50 backdrop-blur-md sticky top-0 z-10 px-4 sm:px-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-sm font-medium">{user.name}</p>
-              <p className="text-xs text-white/50 capitalize">{user.role}</p>
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden p-2 -ml-2 hover:bg-white/5 rounded-lg text-[#98E32F]"
+            >
+              <MenuIcon size={24} />
+            </button>
+            <h1 className="text-lg sm:text-xl font-semibold truncate">
+              {navItems.find(item => item.href === pathname)?.name || 'Owner Dashboard'}
+            </h1>
+          </div>
+          
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="text-right hidden sm:block">
+              <p className="text-sm font-medium leading-none mb-1">{user.name}</p>
+              <p className="text-[10px] text-white/50 uppercase tracking-widest font-black leading-none">{user.role}</p>
             </div>
-            <div className="w-10 h-10 rounded-full bg-[#98E32F] flex items-center justify-center text-[#013644] font-bold">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#98E32F] to-[#7dbb26] flex items-center justify-center text-[#013644] font-bold shadow-lg shadow-[#98E32F]/20">
               {user.name[0]}
             </div>
           </div>
         </header>
-        <div className="p-8">
-          {children}
+
+        <div className="flex-1 overflow-auto">
+          <div className="p-4 sm:p-8 max-w-7xl mx-auto">
+            {children}
+          </div>
         </div>
       </main>
     </div>

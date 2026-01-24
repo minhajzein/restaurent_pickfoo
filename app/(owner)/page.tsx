@@ -57,26 +57,26 @@ export default function OwnerDashboardPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Welcome Header */}
-      <div className="flex flex-col gap-1">
-        <h2 className="text-3xl font-bold tracking-tight">Welcome back, {user?.name.split(' ')[0]}!</h2>
-        <p className="text-white/60 text-lg">Here&apos;s what&apos;s happening with your business today.</p>
+      <div className="flex flex-col gap-2">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Welcome back, {user?.name.split(' ')[0]}!</h2>
+        <p className="text-white/60 text-base sm:text-lg">Here&apos;s what&apos;s happening with your business today.</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {stats.map((stat) => (
-          <div key={stat.name} className="bg-white/5 border border-white/10 p-6 rounded-3xl hover:border-[#98E32F]/50 transition-colors group">
+          <div key={stat.name} className="bg-white/5 border border-white/10 p-5 sm:p-6 rounded-3xl hover:border-[#98E32F]/50 transition-colors group">
             <div className="flex items-start justify-between">
               <div className="p-3 bg-[#98E32F]/10 rounded-2xl text-[#98E32F] group-hover:scale-110 transition-transform">
-                <stat.icon size={24} />
+                <stat.icon size={22} className="sm:w-6 sm:h-6" />
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-[#98E32F] bg-[#98E32F]/10 px-3 py-1.5 rounded-full">
+              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#98E32F] bg-[#98E32F]/10 px-3 py-1.5 rounded-full">
                 {stat.trend}
               </span>
             </div>
             <div className="mt-4">
-              <p className="text-white/30 text-[10px] font-black uppercase tracking-widest leading-none mb-1">{stat.name}</p>
-              <p className="text-4xl font-bold mt-1 tabular-nums">{stat.value}</p>
+              <p className="text-white/30 text-[9px] sm:text-[10px] font-black uppercase tracking-widest leading-none mb-1">{stat.name}</p>
+              <p className="text-3xl sm:text-4xl font-bold mt-1 tabular-nums">{stat.value}</p>
             </div>
           </div>
         ))}
@@ -84,33 +84,33 @@ export default function OwnerDashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Recent Orders */}
-        <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-[2.5rem] p-8">
-          <div className="flex items-center justify-between mb-8">
+        <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8">
+          <div className="flex items-center justify-between mb-6 sm:mb-8">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-[#98E32F]/20 rounded-xl">
-                 <ClipboardList className="text-[#98E32F]" size={20} />
+                 <ClipboardList className="text-[#98E32F]" size={18} />
               </div>
-              <h3 className="text-xl font-bold">Pending Actions</h3>
+              <h3 className="text-lg sm:text-xl font-bold">Pending Actions</h3>
             </div>
-            <Link href="/orders" className="text-[#98E32F] text-xs font-black uppercase tracking-widest hover:underline flex items-center gap-1">
+            <Link href="/orders" className="text-[#98E32F] text-[10px] font-black uppercase tracking-widest hover:underline flex items-center gap-1">
               View All <ChevronRight size={14} />
             </Link>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {orders?.slice(0, 4).map((order: Order) => (
-              <div key={order._id} className="flex items-center justify-between p-5 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-white/10 transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-[#98E32F]">
-                    <Clock size={20} />
+              <div key={order._id} className="flex items-center justify-between p-4 sm:p-5 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-white/10 transition-colors">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/5 flex items-center justify-center text-[#98E32F]">
+                    <Clock size={16} className="sm:w-5 sm:h-5" />
                   </div>
-                  <div>
-                    <p className="font-bold">Order #{order._id.slice(-6)}</p>
-                    <p className="text-xs text-white/40">{order.restaurant?.name} • {order.items.length} items</p>
+                  <div className="min-w-0">
+                    <p className="font-bold text-sm sm:text-base truncate">Order #{order._id.slice(-6)}</p>
+                    <p className="text-[10px] sm:text-xs text-white/40 truncate">{order.restaurant?.name} • {order.items.length} items</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-black text-[#98E32F]">₹{order.totalAmount}</p>
-                  <span className={`text-[10px] uppercase tracking-widest font-black px-2 py-1 rounded-full ${
+                <div className="text-right shrink-0">
+                  <p className="font-black text-[#98E32F] text-sm sm:text-base">₹{order.totalAmount}</p>
+                  <span className={`text-[8px] sm:text-[10px] uppercase tracking-widest font-black px-2 py-1 rounded-full ${
                     order.status === 'pending' ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'
                   }`}>
                     {order.status}
@@ -126,23 +126,23 @@ export default function OwnerDashboardPage() {
         </div>
 
         {/* Verification Status */}
-        <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8">
-          <div className="flex items-center gap-3 mb-8">
+        <div className="bg-white/5 border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8">
+          <div className="flex items-center gap-3 mb-6 sm:mb-8">
              <div className="p-2 bg-[#98E32F]/20 rounded-xl">
-                <Store className="text-[#98E32F]" size={20} />
+                <Store className="text-[#98E32F]" size={18} />
              </div>
-             <h3 className="text-xl font-bold">Network Status</h3>
+             <h3 className="text-lg sm:text-xl font-bold">Network Status</h3>
           </div>
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {restaurants?.slice(0, 3).map((res: Restaurant) => (
-               <div key={res._id} className="p-5 bg-white/[0.02] border border-white/5 rounded-3xl">
+               <div key={res._id} className="p-4 sm:p-5 bg-white/[0.02] border border-white/5 rounded-3xl">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className={`p-2 rounded-xl ${res.status === 'active' ? 'bg-[#98E32F]/20 text-[#98E32F]' : 'bg-white/10 text-white/30'}`}>
-                      <Store size={16} />
+                    <div className={`p-2 rounded-xl shrink-0 ${res.status === 'active' ? 'bg-[#98E32F]/20 text-[#98E32F]' : 'bg-white/10 text-white/30'}`}>
+                      <Store size={14} className="sm:w-4 sm:h-4" />
                     </div>
-                    <div>
-                        <h4 className="font-bold text-sm leading-tight">{res.name}</h4>
-                        <p className="text-[10px] text-white/30">{res.address.city}</p>
+                    <div className="min-w-0">
+                        <h4 className="font-bold text-sm leading-tight truncate">{res.name}</h4>
+                        <p className="text-[10px] text-white/30 truncate">{res.address.city}</p>
                     </div>
                   </div>
                   <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${
@@ -162,7 +162,7 @@ export default function OwnerDashboardPage() {
                   Register your first restaurant to start.
                </div>
             )}
-            <Link href="/restaurants" className="block w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-center text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all">
+            <Link href="/restaurants" className="block w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">
                Manage Network
             </Link>
           </div>

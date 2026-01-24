@@ -47,17 +47,17 @@ export default function OwnerReviewsPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Customer Reviews</h2>
-          <p className="text-white/60">Listen to what your customers are saying and engage with their feedback.</p>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Customer Reviews</h2>
+          <p className="text-white/60 text-sm sm:text-base">Listen to what your customers are saying and engage with their feedback.</p>
         </div>
-        <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-4 flex items-center gap-6">
-          <div className="text-center">
-            <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-1">Average Rating</p>
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:px-6 sm:py-4 flex items-center justify-between sm:justify-start gap-4 sm:gap-6">
+          <div className="text-center sm:text-left">
+            <p className="text-white/40 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mb-1">Average Rating</p>
             <div className="flex items-center gap-2">
-              <span className="text-3xl font-black text-[#98E32F]">{avgRating}</span>
-              <div className="flex text-[#98E32F]">
+              <span className="text-2xl sm:text-3xl font-black text-[#98E32F]">{avgRating}</span>
+              <div className="flex text-[#98E32F] hidden sm:flex">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} size={14} fill={i < Math.floor(Number(avgRating)) ? 'currentColor' : 'none'} />
                 ))}
@@ -65,9 +65,9 @@ export default function OwnerReviewsPage() {
             </div>
           </div>
           <div className="h-10 w-px bg-white/10"></div>
-          <div className="text-center">
-            <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-1">Total Reviews</p>
-            <p className="text-3xl font-black text-white">{totalReviews}</p>
+          <div className="text-center sm:text-left">
+            <p className="text-white/40 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mb-1">Total Reviews</p>
+            <p className="text-2xl sm:text-3xl font-black text-white">{totalReviews}</p>
           </div>
         </div>
       </div>
@@ -75,25 +75,25 @@ export default function OwnerReviewsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left: Stats & Filters */}
         <div className="space-y-6">
-          <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8">
-            <h3 className="font-bold mb-6 flex items-center gap-2">
+          <div className="bg-white/5 border border-white/10 rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-8">
+            <h3 className="font-bold mb-6 flex items-center gap-2 text-sm sm:text-base">
               <Activity className="text-[#98E32F]" size={18} />
               Rating Distribution
             </h3>
             <div className="space-y-4">
               {ratingStats.map((stat) => (
                 <div key={stat.stars} className="flex items-center gap-4 group cursor-pointer">
-                  <div className="flex items-center gap-1 w-12 shrink-0">
-                    <span className="text-sm font-bold text-white/60">{stat.stars}</span>
-                    <Star size={12} className="text-[#98E32F]" fill="currentColor" />
+                  <div className="flex items-center gap-1 w-10 sm:w-12 shrink-0">
+                    <span className="text-xs sm:text-sm font-bold text-white/60">{stat.stars}</span>
+                    <Star size={10} className="text-[#98E32F]" fill="currentColor" />
                   </div>
-                  <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                  <div className="flex-1 h-1.5 sm:h-2 bg-white/5 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-[#98E32F] rounded-full transition-all duration-1000 group-hover:bg-[#86c929]"
                       style={{ width: `${stat.percentage}%` }}
                     ></div>
                   </div>
-                  <span className="text-xs text-white/40 font-mono w-8 text-right">{stat.count}</span>
+                  <span className="text-[10px] sm:text-xs text-white/40 font-mono w-8 text-right">{stat.count}</span>
                 </div>
               ))}
             </div>
@@ -155,22 +155,22 @@ export default function OwnerReviewsPage() {
             </div>
           ) : (
             reviews?.map((review: Review) => (
-              <div key={review._id} className="bg-white/5 border border-white/10 rounded-[2rem] p-6 hover:border-[#98E32F]/30 transition-all group">
+              <div key={review._id} className="bg-white/5 border border-white/10 rounded-3xl sm:rounded-[2rem] p-5 sm:p-6 hover:border-[#98E32F]/30 transition-all group">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/5 relative bg-white/5">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 border-white/5 relative bg-white/5">
                       {review.user?.profilePicture ? (
                         <Image src={review.user.profilePicture} alt={review.user.name} fill className="object-cover" />
                       ) : (
-                        <User className="m-auto text-white/20" size={24} />
+                        <User className="m-auto text-white/20 sm:w-6 sm:h-6" size={20} />
                       )}
                     </div>
                     <div>
-                      <h4 className="font-bold text-white group-hover:text-[#98E32F] transition-colors">{review.user?.name || 'Anonymous User'}</h4>
+                      <h4 className="font-bold text-sm sm:text-base text-white group-hover:text-[#98E32F] transition-colors">{review.user?.name || 'Anonymous User'}</h4>
                       <div className="flex items-center gap-2 mt-0.5">
                         <div className="flex text-[#98E32F]">
                           {[...Array(5)].map((_, i) => (
-                            <Star key={i} size={10} fill={i < review.rating ? 'currentColor' : 'none'} />
+                            <Star key={i} size={8} className="sm:w-[10px] sm:h-[10px]" fill={i < review.rating ? 'currentColor' : 'none'} />
                           ))}
                         </div>
                         <span className="text-[10px] text-white/20 font-bold">•</span>
@@ -180,32 +180,32 @@ export default function OwnerReviewsPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="bg-white/5 px-3 py-1 rounded-lg border border-white/5 flex items-center gap-2">
-                        <Store size={12} className="text-[#98E32F]" />
-                        <span className="text-[10px] font-bold text-white/30 truncate max-w-[100px]">{review.restaurant?.name || 'Unknown Restaurant'}</span>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <div className="bg-white/5 px-2 sm:px-3 py-1 rounded-lg border border-white/5 flex items-center gap-1.5 shrink-0">
+                        <Store size={10} className="text-[#98E32F] sm:w-3 sm:h-3" />
+                        <span className="text-[8px] sm:text-[10px] font-bold text-white/30 truncate max-w-[60px] sm:max-w-[100px]">{review.restaurant?.name || 'Unknown'}</span>
                     </div>
-                    <button className="p-2 hover:bg-white/5 rounded-xl text-white/20">
-                      <MoreVertical size={16} />
+                    <button className="p-1 sm:p-2 hover:bg-white/5 rounded-xl text-white/20">
+                      <MoreVertical size={14} className="sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 </div>
 
-                <p className="text-white/70 text-sm leading-relaxed mb-6 pl-16 italic">
+                <p className="text-white/70 text-xs sm:text-sm leading-relaxed mb-6 sm:pl-16 italic">
                   &quot;{review.comment}&quot;
                 </p>
 
-                <div className="pl-16 flex items-center justify-between">
-                  <div className="flex items-center gap-6">
-                    <button className="flex items-center gap-2 text-[11px] font-bold text-white/30 hover:text-white transition-colors">
-                      <ThumbsUp size={14} /> Helpful
+                <div className="sm:pl-16 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center justify-between sm:justify-start w-full sm:w-auto gap-6">
+                    <button className="flex items-center gap-2 text-[10px] sm:text-[11px] font-bold text-white/30 hover:text-white transition-colors">
+                      <ThumbsUp size={12} className="sm:w-[14px] sm:h-[14px]" /> Helpful
                     </button>
-                    <button className={`flex items-center gap-2 text-[11px] font-bold transition-colors ${review.replied ? 'text-[#98E32F]' : 'text-white/30 hover:text-white'}`}>
-                      <Reply size={14} /> {review.replied ? 'Already Replied' : 'Reply Publicly'}
+                    <button className={`flex items-center gap-2 text-[10px] sm:text-[11px] font-bold transition-colors ${review.replied ? 'text-[#98E32F]' : 'text-white/30 hover:text-white'}`}>
+                      <Reply size={12} className="sm:w-[14px] sm:h-[14px]" /> {review.replied ? 'Replied' : 'Reply'}
                     </button>
                   </div>
                   {!review.replied && (
-                    <button className="text-[10px] font-black uppercase tracking-widest text-[#98E32F] bg-[#98E32F]/10 px-4 py-2 rounded-xl hover:bg-[#98E32F]/20 transition-all">
+                    <button className="w-full sm:w-auto text-[10px] font-black uppercase tracking-widest text-[#98E32F] bg-[#98E32F]/10 px-4 py-2.5 rounded-xl hover:bg-[#98E32F]/20 transition-all">
                         Write Reply
                     </button>
                   )}

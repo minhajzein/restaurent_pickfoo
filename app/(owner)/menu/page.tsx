@@ -209,10 +209,10 @@ export default function OwnerMenuPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-bold">Menu Library</h2>
-          <p className="text-white/60">Manage items and sync them across all your restaurants.</p>
+          <h2 className="text-2xl sm:text-3xl font-bold">Menu Library</h2>
+          <p className="text-white/60 text-sm sm:text-base">Manage items and sync them across all your restaurants.</p>
         </div>
         <button 
           onClick={() => {
@@ -221,7 +221,7 @@ export default function OwnerMenuPage() {
             setImageUrl('');
             setIsAddItemModalOpen(true)
           }}
-          className="bg-[#98E32F] text-[#013644] px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-[#86c929] transition-all"
+          className="bg-[#98E32F] text-[#013644] px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-[#86c929] transition-all transform hover:scale-105 active:scale-95 w-full sm:w-auto text-sm sm:text-base"
         >
           <Plus size={20} />
           Add Item to Library
@@ -229,20 +229,20 @@ export default function OwnerMenuPage() {
       </div>
 
       {/* Filters (Can be expanded functionality later) */}
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-4">
         {/* ... existing filters ... */}
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" size={20} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" size={18} />
           <input 
             type="text" 
             placeholder="Search items..." 
-            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-3 focus:border-[#98E32F] outline-none transition-colors"
+            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-3 focus:border-[#98E32F] outline-none transition-colors text-sm"
           />
         </div>
          <div className="flex gap-2">
           <button 
             onClick={() => setIsCategoryModalOpen(true)}
-            className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-3 rounded-2xl hover:bg-white/10"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white/5 border border-white/10 px-6 py-3 rounded-2xl hover:bg-white/10 transition-colors text-sm"
           >
             <Tag size={18} />
             Categories
@@ -252,13 +252,13 @@ export default function OwnerMenuPage() {
 
       {/* Items Grid */}
       {isMenuLoading ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="bg-white/5 border border-white/10 rounded-3xl h-44 animate-pulse"></div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {menuItems?.map((item: MenuItem) => (
             <div key={item._id} className="bg-white/5 border border-white/10 rounded-3xl p-5 flex gap-6 group hover:border-[#98E32F]/30 transition-all relative">
               <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl overflow-hidden shrink-0 relative bg-white/5">
@@ -375,26 +375,26 @@ export default function OwnerMenuPage() {
 
       {/* Add Item Modal */}
       {isAddItemModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-[#013644]/95 backdrop-blur-md" onClick={() => setIsAddItemModalOpen(false)}></div>
           
-          <div className="relative bg-[#002833] border border-white/10 w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="relative bg-[#002833] border border-white/10 w-full sm:max-w-2xl h-full sm:h-auto sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col sm:max-h-[90vh]">
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full overflow-hidden">
               {/* Modal Header */}
-              <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+              <div className="px-6 sm:px-8 py-4 sm:py-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-[#98E32F]/20 rounded-xl">
-                    <UtensilsCrossed size={24} className="text-[#98E32F]" />
+                    <UtensilsCrossed size={20} className="text-[#98E32F] sm:w-6 sm:h-6" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold">Add Item to Library</h3>
-                    <p className="text-white/40 text-[11px] uppercase tracking-widest font-bold">Master Menu Creation</p>
+                    <h3 className="text-lg sm:text-xl font-bold">Add Item to Library</h3>
+                    <p className="text-white/40 text-[9px] sm:text-[11px] uppercase tracking-widest font-bold">Master Menu Creation</p>
                   </div>
                 </div>
                 <button 
                   type="button"
                   onClick={() => setIsAddItemModalOpen(false)}
-                  className="p-3 hover:bg-white/5 rounded-2xl text-white/40 hover:text-white transition-all border border-transparent hover:border-white/10"
+                  className="p-2 sm:p-3 hover:bg-white/5 rounded-2xl text-white/40 hover:text-white transition-all border border-transparent hover:border-white/10"
                 >
                   <X size={20} />
                 </button>
@@ -631,21 +631,21 @@ export default function OwnerMenuPage() {
                 </section>
               </div>
 
-              {/* Modal Footer */}
-              <div className="px-8 py-6 border-t border-white/5 flex items-center justify-end gap-4 bg-white/[0.02]">
+               {/* Modal Footer */}
+              <div className="px-6 sm:px-8 py-6 border-t border-white/5 flex items-center justify-end gap-4 bg-white/[0.02]">
                 <button 
                   type="button"
                   onClick={() => setIsAddItemModalOpen(false)}
-                  className="px-6 py-3 rounded-2xl font-bold text-white/40 hover:text-white"
+                  className="px-4 sm:px-6 py-3 rounded-2xl font-bold text-white/40 hover:text-white text-sm sm:text-base"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-[#98E32F] text-[#013644] px-10 py-3 rounded-2xl font-black text-sm hover:shadow-[0_0_30px_rgba(152,227,47,0.4)] transition-all flex items-center gap-2 disabled:opacity-50"
+                  className="bg-[#98E32F] text-[#013644] px-6 sm:px-10 py-3 rounded-2xl font-black text-sm hover:shadow-[0_0_30px_rgba(152,227,47,0.4)] transition-all flex items-center justify-center gap-2 disabled:opacity-50 flex-1 sm:flex-none"
                 >
-                  {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : (editingItemId ? 'Update Master Item' : 'Create Master Item')} <ChevronRight size={18} />
+                  {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : (editingItemId ? 'Update' : 'Create')} <ChevronRight size={18} />
                 </button>
               </div>
             </form>

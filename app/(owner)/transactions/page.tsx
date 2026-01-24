@@ -46,13 +46,13 @@ export default function OwnerTransactionsPage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Financial Library</h2>
-          <p className="text-white/60">Manage your earnings, payouts, and digital settlements.</p>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Financial Library</h2>
+          <p className="text-white/60 text-sm sm:text-base">Manage your earnings, payouts, and digital settlements.</p>
         </div>
-        <div className="flex gap-2">
-          <button className="bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-white/10 transition-all">
+        <div className="flex gap-2 w-full sm:w-auto">
+          <button className="flex-1 sm:flex-none bg-white/5 border border-white/10 px-6 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-white/10 transition-all">
             <Download size={18} />
             Export CSV
           </button>
@@ -60,15 +60,15 @@ export default function OwnerTransactionsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-[#98E32F] p-8 rounded-[2.5rem] shadow-[0_20px_50px_rgba(152,227,47,0.2)] text-[#013644] relative overflow-hidden group">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="sm:col-span-2 lg:col-span-1 bg-[#98E32F] p-6 sm:p-8 rounded-3xl sm:rounded-[2.5rem] shadow-[0_20px_50px_rgba(152,227,47,0.2)] text-[#013644] relative overflow-hidden group">
           <div className="absolute right-[-20px] top-[-20px] opacity-10 group-hover:scale-110 transition-transform duration-700">
-            <TrendingUp size={140} />
+            <TrendingUp size={120} className="sm:w-[140px] sm:h-[140px]" />
           </div>
           <div className="relative z-10">
-            <p className="text-xs font-black uppercase tracking-widest mb-1 opacity-60">Total Revenue</p>
+            <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest mb-1 opacity-60">Total Revenue</p>
             <div className="flex items-center gap-1 mb-4">
-              <span className="text-4xl font-black">
+              <span className="text-3xl sm:text-4xl font-black">
                 {isStatsLoading ? (
                   <span className="opacity-20 animate-pulse">----</span>
                 ) : (
@@ -76,18 +76,18 @@ export default function OwnerTransactionsPage() {
                 )}
               </span>
             </div>
-            <div className="flex items-center gap-2 bg-[#013644]/10 w-fit px-3 py-1 rounded-full text-[10px] font-bold">
+            <div className="flex items-center gap-2 bg-[#013644]/10 w-fit px-3 py-1.5 rounded-full text-[9px] sm:text-[10px] font-bold">
               <ArrowUpRight size={14} />
               +12.5% from last month
             </div>
           </div>
         </div>
 
-        <div className="bg-white/5 border border-white/10 p-8 rounded-[2.5rem] relative overflow-hidden group">
+        <div className="bg-white/5 border border-white/10 p-6 sm:p-8 rounded-3xl sm:rounded-[2.5rem] relative overflow-hidden group">
           <div className="relative z-10">
-            <p className="text-xs font-bold text-white/30 uppercase tracking-widest mb-1">Total Transactions</p>
+            <p className="text-[10px] sm:text-xs font-bold text-white/30 uppercase tracking-widest mb-1">Total Orders</p>
             <div className="flex items-center gap-1 mb-4">
-              <span className="text-4xl font-black">
+              <span className="text-3xl sm:text-4xl font-black">
                 {isStatsLoading ? (
                   <span className="opacity-20 animate-pulse">--</span>
                 ) : (
@@ -95,20 +95,20 @@ export default function OwnerTransactionsPage() {
                 )}
               </span>
             </div>
-            <p className="text-[10px] font-bold text-white/20 uppercase">Across all registered restaurants</p>
+            <p className="text-[9px] sm:text-[10px] font-bold text-white/20 uppercase">Across all restaurants</p>
           </div>
-          <div className="absolute right-8 bottom-8 text-[#98E32F]/10 group-hover:rotate-12 transition-transform duration-500">
-            <Wallet size={48} />
+          <div className="absolute right-6 bottom-6 sm:right-8 sm:bottom-8 text-[#98E32F]/10 group-hover:rotate-12 transition-transform duration-500">
+            <Wallet size={40} className="sm:w-12 sm:h-12" />
           </div>
         </div>
 
-        <div className="bg-white/5 border border-white/10 p-8 rounded-[2.5rem] relative overflow-hidden group">
+        <div className="bg-white/5 border border-white/10 p-6 sm:p-8 rounded-3xl sm:rounded-[2.5rem] relative overflow-hidden group">
           <div className="relative z-10">
-            <p className="text-xs font-bold text-white/30 uppercase tracking-widest mb-1">Pending Settlement</p>
+            <p className="text-[10px] sm:text-xs font-bold text-white/30 uppercase tracking-widest mb-1">Pending Payout</p>
             <div className="flex items-center gap-1 mb-4">
-              <span className="text-4xl font-black">₹0</span>
+              <span className="text-3xl sm:text-4xl font-black">₹0</span>
             </div>
-            <div className="flex items-center gap-2 text-orange-400 text-[10px] font-bold">
+            <div className="flex items-center gap-2 text-orange-400 text-[9px] sm:text-[10px] font-bold">
               <Clock size={14} />
               In process: 2 orders
             </div>
@@ -119,8 +119,8 @@ export default function OwnerTransactionsPage() {
       {/* Main Content */}
       <div className="bg-white/5 border border-white/10 rounded-[2.5rem] overflow-hidden">
         {/* Table Filters */}
-        <div className="p-6 border-b border-white/5 flex flex-col md:flex-row gap-4 items-center justify-between bg-white/[0.01]">
-          <div className="relative flex-1 w-full max-w-md">
+        <div className="p-4 sm:p-6 border-b border-white/5 flex flex-col sm:flex-row gap-4 items-center justify-between bg-white/[0.01]">
+          <div className="relative flex-1 w-full">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
             <input 
               type="text" 
@@ -128,8 +128,8 @@ export default function OwnerTransactionsPage() {
               className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-2.5 focus:border-[#98E32F]/50 outline-none transition-all text-sm"
             />
           </div>
-          <div className="flex gap-2">
-            <button className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl hover:bg-white/10 transition-all text-sm font-bold text-white/60">
+          <div className="flex gap-2 w-full sm:w-auto">
+            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white/5 border border-white/10 px-6 py-2.5 rounded-2xl hover:bg-white/10 transition-all text-sm font-bold text-white/60">
               <Filter size={16} />
               Filter
             </button>
