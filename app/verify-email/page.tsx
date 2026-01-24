@@ -45,7 +45,7 @@ export default function VerifyEmailPage() {
     onSuccess: (data) => {
       localStorage.removeItem('verify_email');
       setAuth(data.user);
-      router.push('/owner/dashboard');
+      router.push('/');
     },
     onError: (err: AxiosError<{ message: string }>) => {
       setError(err.response?.data?.message || 'Verification failed');

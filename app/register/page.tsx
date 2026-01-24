@@ -36,7 +36,7 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [serverError, setServerError] = useState('');
   
-  const { isAuthenticated, isInitialized } = useAuthStore();
+  const { setAuth, isAuthenticated, isInitialized } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -70,8 +70,8 @@ export default function RegisterPage() {
       return response.data;
     },
     onSuccess: (data) => {
-      localStorage.setItem('verify_email', data.email);
-      router.push('/verify-email');
+      setAuth(data.user);
+      router.push('/');
     },
     onError: (err: AxiosError<{ message: string }>) => {
       setServerError(err.response?.data?.message || 'Registration failed. Please try again.');
