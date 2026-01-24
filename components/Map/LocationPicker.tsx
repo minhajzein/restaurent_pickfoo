@@ -60,7 +60,7 @@ export default function LocationPicker({ onLocationSelect, initialLocation }: Lo
   const defaultCenter: [number, number] = initialLocation || [10.8505, 76.2711]; // Default to Kerala coordinates
 
   return (
-    <div className="h-[300px] w-full rounded-2xl overflow-hidden border border-white/10 z-0">
+    <div className="h-full w-full rounded-2xl overflow-hidden border border-white/10 z-0">
       <MapContainer 
         center={defaultCenter} 
         zoom={13} 

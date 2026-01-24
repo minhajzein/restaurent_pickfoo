@@ -558,7 +558,7 @@ export default function OwnerRestaurantsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-[#013644]/95 backdrop-blur-md" onClick={handleCancel}></div>
           
-          <div className="relative bg-[#002833] border border-white/10 w-full sm:max-w-6xl h-full sm:h-auto sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col sm:max-h-[90vh]">
+          <div className="relative bg-[#002833] border border-white/10 w-full sm:max-w-6xl h-full sm:h-auto lg:h-[85vh] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col sm:max-h-[90vh]">
             <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-hidden flex flex-col">
               {/* Modal Header */}
               <div className="px-6 sm:px-8 py-4 sm:py-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02] shrink-0">
@@ -580,8 +580,8 @@ export default function OwnerRestaurantsPage() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
-                <div className="w-full lg:w-[60%] overflow-y-auto p-6 sm:p-8 border-r border-white/5 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
+                <div className="w-full lg:w-[60%] p-4 sm:p-8 lg:border-r border-white/5 lg:overflow-y-auto lg:h-full custom-scrollbar">
                   <div className="space-y-8 sm:space-y-10">
                     <section>
                       <div className="flex items-center gap-3 mb-6">
@@ -869,10 +869,11 @@ export default function OwnerRestaurantsPage() {
                   </div>
                 </div>
 
-                <div className="flex lg:w-[40%] flex-col bg-white/[0.01] border-t lg:border-t-0 border-white/5 max-h-[400px] lg:max-h-full overflow-y-auto lg:overflow-visible">
-                  <div className="p-6 sm:p-8 flex-1 flex flex-col">
-                    <div className="mb-6">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                <div className="flex lg:w-[40%] flex-col bg-white/[0.01] border-t lg:border-t-0 border-white/5 overflow-y-auto lg:overflow-hidden custom-scrollbar shrink-0 lg:shrink lg:h-full">
+                  <div className="flex-1 flex flex-col relative lg:h-full">
+                    <div className="p-6 sm:p-8 lg:absolute lg:top-0 lg:left-0 lg:right-0 lg:z-10 lg:bg-gradient-to-b lg:from-[#002833] lg:to-transparent pointer-events-none">
+                      <div className="mb-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2 pointer-events-auto">
                           <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#98E32F]">Map Precision</h4>
                           {selectedLocation && (
                             <div className="flex items-center gap-2 px-3 py-1 bg-[#98E32F]/10 rounded-lg">
@@ -882,17 +883,18 @@ export default function OwnerRestaurantsPage() {
                               </span>
                             </div>
                           )}
+                        </div>
                       </div>
-                      <p className="text-xs text-white/40">Drop a pin exactly where your restaurant entrance is located.</p>
+                      <p className="text-xs text-white/40 hidden lg:block pointer-events-auto">Drop a pin exactly where your restaurant entrance is located.</p>
                     </div>
 
-                    <div className="flex-1 min-h-[400px] relative rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl">
+                    <div className="flex-1 min-h-[400px] relative lg:rounded-none overflow-hidden border-white/10 shadow-2xl w-full lg:h-full">
                       <LocationPicker 
                         initialLocation={selectedLocation ? [selectedLocation.lat, selectedLocation.lng] : undefined}
                         onLocationSelect={(lat, lng) => setSelectedLocation({ lat, lng })}
                       />
                       <div className="absolute bottom-6 left-6 right-6 z-10">
-                        <div className="bg-[#002833]/80 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl">
+                        <div className="bg-[#002833]/90 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl w-full">
                           <div className="flex items-start gap-3">
                             <AlertCircle size={18} className="text-[#98E32F] shrink-0 mt-0.5" />
                             <p className="text-[11px] text-white/60 leading-relaxed">
@@ -903,27 +905,6 @@ export default function OwnerRestaurantsPage() {
                       </div>
                     </div>
 
-                    <div className="mt-8 p-6 rounded-3xl bg-white/5 border border-white/5">
-                      <h5 className="text-xs font-bold mb-3 uppercase tracking-widest text-white/30 text-center">Preview</h5>
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 overflow-hidden relative">
-                          {logoUrl ? (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img 
-                              src={logoUrl} 
-                              alt="Logo Preview" 
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full animate-pulse" />
-                          )}
-                        </div>
-                        <div className="flex-1 space-y-2">
-                          <div className="h-4 w-3/4 bg-white/5 rounded-lg"></div>
-                          <div className="h-3 w-1/2 bg-white/5 rounded-lg"></div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
