@@ -20,9 +20,10 @@ import {
   Power,
   X,
   ArrowRight,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { restaurantSchema, type RestaurantFormData } from "@/schemas";
 import { useRestaurants } from "@/hooks/useRestaurants";
@@ -44,6 +45,224 @@ const LocationPicker = dynamic(
   },
 );
 
+interface ScheduleFormData {
+  openingHours: Restaurant["openingHours"];
+  isManualOverride: boolean;
+}
+
+const ScheduleModal = ({
+  isOpen,
+  onClose,
+  restaurant,
+  onUpdate,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  restaurant: Restaurant | null;
+  onUpdate: (data: ScheduleFormData) => Promise<void>;
+}) => {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    getValues,
+    setValue,
+    control,
+    formState: { isSubmitting },
+  } = useForm<ScheduleFormData>({
+    defaultValues: {
+      openingHours: restaurant?.openingHours || [],
+      isManualOverride: restaurant?.isManualOverride || false,
+    },
+  });
+
+  const openingHours = useWatch({
+    control,
+    name: "openingHours",
+  });
+
+  const isManualOverride = useWatch({
+    control,
+    name: "isManualOverride",
+  });
+
+  useEffect(() => {
+    if (restaurant) {
+      reset({
+        openingHours: restaurant.openingHours,
+        isManualOverride: restaurant.isManualOverride,
+      });
+    }
+  }, [restaurant, reset]);
+
+  if (!isOpen || !restaurant) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-[#013644]/80 backdrop-blur-xl animate-in fade-in duration-300"
+        onClick={onClose}
+      />
+      <div className="relative w-full max-w-2xl bg-[#002833] border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#98E32F]/10 flex items-center justify-center text-[#98E32F] border border-[#98E32F]/20">
+              <Clock size={24} />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-white">Operating Hours</h3>
+              <p className="text-xs text-white/40 uppercase tracking-widest font-bold">
+                {restaurant.name}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-3 hover:bg-white/5 rounded-2xl text-white/20 hover:text-white transition-all"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <form
+          onSubmit={handleSubmit(onUpdate)}
+          className="p-8 space-y-6 max-h-[55vh] overflow-y-auto custom-scrollbar"
+        >
+          <label className="flex items-center justify-between p-6 bg-white/5 border border-white/5 rounded-3xl cursor-pointer hover:bg-white/[0.07] transition-all">
+            <div>
+              <h4 className="font-bold mb-1">Manual Mode</h4>
+              <p className="text-[10px] text-white/40 uppercase tracking-widest font-black">
+                Disable automatic schedule tracking
+              </p>
+            </div>
+            <div className="relative inline-flex items-center">
+              <input
+                type="checkbox"
+                {...register("isManualOverride")}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white/20 peer-checked:after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#98E32F]"></div>
+            </div>
+          </label>
+
+          {isManualOverride ? (
+            <div className="bg-[#98E32F]/5 border border-[#98E32F]/10 rounded-3xl p-8 text-center space-y-4 animate-in fade-in zoom-in-95 duration-300">
+              <div className="w-16 h-16 bg-[#98E32F]/10 rounded-full flex items-center justify-center text-[#98E32F] mx-auto">
+                <Power size={32} />
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-lg">
+                  Manual Control Active
+                </h4>
+                <p className="text-sm text-white/50 max-w-sm mx-auto mt-2">
+                  Your automated schedule is currently paused. You can open or
+                  close your restaurant manually using the
+                  <span className="text-[#98E32F] font-bold mx-1">
+                    Power Toggle
+                  </span>
+                  on the restaurant card.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {[
+                "Sunday",
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+              ].map((dayName, index) => {
+                const isClosed = openingHours?.[index]?.isClosed;
+                return (
+                  <div
+                    key={dayName}
+                    className={`flex items-center justify-between p-4 rounded-2xl transition-all border ${
+                      isClosed
+                        ? "bg-red-500/5 border-red-500/10 opacity-60"
+                        : "bg-white/5 border-white/5"
+                    }`}
+                  >
+                    <div className="flex items-center gap-4 w-32">
+                      <span className="text-sm font-bold">{dayName}</span>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                      <div
+                        className={`flex items-center gap-3 transition-opacity duration-300 ${isClosed ? "opacity-30 pointer-events-none" : "opacity-100"}`}
+                      >
+                        <input
+                          type="time"
+                          {...register(`openingHours.${index}.openTime`)}
+                          className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#98E32F]/50 transition-all font-mono"
+                        />
+                        <span className="text-white/20 text-xs">to</span>
+                        <input
+                          type="time"
+                          {...register(`openingHours.${index}.closeTime`)}
+                          className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#98E32F]/50 transition-all font-mono"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const current = getValues(
+                            `openingHours.${index}.isClosed`,
+                          );
+                          setValue(`openingHours.${index}.isClosed`, !current);
+                        }}
+                        className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all border ${
+                          isClosed
+                            ? "bg-red-500/20 text-red-400 border-red-500/30"
+                            : "bg-[#98E32F]/10 text-[#98E32F] border-[#98E32F]/20 hover:bg-[#98E32F]/20"
+                        }`}
+                      >
+                        {isClosed ? "CLOSED" : "OPEN"}
+                      </button>
+                      <input
+                        type="hidden"
+                        {...register(`openingHours.${index}.day`)}
+                      />
+                      <input
+                        type="hidden"
+                        {...register(`openingHours.${index}.isClosed`)}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </form>
+
+        <div className="p-8 border-t border-white/5 bg-white/[0.02] flex gap-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 px-8 py-4 rounded-[1.5rem] font-bold text-white/40 hover:text-white hover:bg-white/5 transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit(onUpdate)}
+            disabled={isSubmitting}
+            className="flex-[2] bg-[#98E32F] text-[#013644] px-10 py-4 rounded-[1.5rem] font-black hover:shadow-[0_0_30px_rgba(152,227,47,0.4)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {isSubmitting ? (
+              <Loader2 className="animate-spin" size={20} />
+            ) : (
+              "Save Schedule"
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function OwnerRestaurantsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{
@@ -53,6 +272,9 @@ export default function OwnerRestaurantsPage() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [schedulingRestaurant, setSchedulingRestaurant] =
+    useState<Restaurant | null>(null);
 
   const {
     useMyRestaurants,
@@ -68,6 +290,27 @@ export default function OwnerRestaurantsPage() {
   const [docsUrls, setDocsUrls] = useState<Record<string, string>>({});
   const [uploadingFile, setUploadingFile] = useState<string | null>(null);
 
+  const handleUpdateSchedule = async (data: {
+    openingHours: Restaurant["openingHours"];
+    isManualOverride: boolean;
+  }) => {
+    if (!schedulingRestaurant) return;
+    try {
+      await updateRestaurant.mutateAsync({
+        id: schedulingRestaurant._id,
+        data: {
+          openingHours: data.openingHours,
+          isManualOverride: data.isManualOverride,
+        },
+      });
+      toast.success("Schedule updated successfully");
+      setIsScheduleModalOpen(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update schedule");
+    }
+  };
+
   const {
     register,
     handleSubmit,
@@ -77,14 +320,34 @@ export default function OwnerRestaurantsPage() {
   } = useForm<RestaurantFormData>({
     resolver: zodResolver(restaurantSchema),
     defaultValues: {
-      address: { state: "Kerala" },
+      name: "",
+      description: "",
+      email: "",
+      contactNumber: "",
+      address: {
+        street: "",
+        city: "",
+        state: "Kerala",
+        zipCode: "",
+      },
       image: "",
       legalDocs: {
+        fssaiLicenseNumber: "",
         fssaiCertificateUrl: "",
+        panNumber: "",
+        gstNumber: "",
         gstCertificateUrl: "",
+        tradeLicenseNumber: "",
         tradeLicenseUrl: "",
         healthCertificateUrl: "",
       },
+      isManualOverride: false,
+      openingHours: Array.from({ length: 7 }, (_, i) => ({
+        day: i,
+        openTime: "09:00",
+        closeTime: "22:00",
+        isClosed: false,
+      })),
     },
   });
 
@@ -300,6 +563,12 @@ export default function OwnerRestaurantsPage() {
     }
     setDocsUrls(docsToAdd);
 
+    // Opening Hours
+    if (restaurant.openingHours && restaurant.openingHours.length > 0) {
+      setValue("openingHours", restaurant.openingHours);
+    }
+    setValue("isManualOverride", restaurant.isManualOverride || false);
+
     setIsAddModalOpen(true);
   };
 
@@ -388,7 +657,7 @@ export default function OwnerRestaurantsPage() {
     }
   };
 
-  const onSubmit = async (data: RestaurantFormData) => {
+  const onSubmit: SubmitHandler<RestaurantFormData> = async (data) => {
     if (!selectedLocation) {
       toast.error("Please select a location on the map");
       return;
@@ -478,59 +747,101 @@ export default function OwnerRestaurantsPage() {
                 />
 
                 {/* Open/Close Toggle */}
-                {restaurant.status === "active" && (
-                  <button
-                    onClick={(e) => handleToggleOpen(restaurant, e)}
-                    className={`absolute top-4 left-4 p-2 rounded-xl backdrop-blur-md border transition-all ${
-                      restaurant.isOpen
-                        ? "bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30"
-                        : "bg-red-500/20 text-red-400 border-red-500/30 hover:bg-red-500/30"
-                    }`}
-                    title={
-                      restaurant.isOpen ? "Close Restaurant" : "Open Restaurant"
-                    }
-                  >
-                    <Power size={16} />
-                  </button>
-                )}
-
-                <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
-                  <span
-                    className={`
-                    px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md border 
-                    ${
-                      restaurant.status === "active"
-                        ? "bg-green-500/20 text-green-400 border-green-500/30"
-                        : restaurant.status === "pending"
-                          ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
-                          : "bg-red-500/20 text-red-400 border-red-500/30"
-                    }
-                  `}
-                  >
-                    {restaurant.status}
-                  </span>
-
-                  {restaurant.status === "active" && (
-                    <span
-                      className={`
-                      px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md border flex items-center gap-1.5
-                      ${
-                        restaurant.isOpen
-                          ? "bg-[#98E32F]/20 text-[#98E32F] border-[#98E32F]/30"
-                          : "bg-red-500/20 text-red-400 border-red-500/30"
-                      }
-                    `}
-                    >
-                      <div
-                        className={`w-1.5 h-1.5 rounded-full ${restaurant.isOpen ? "bg-[#98E32F] animate-pulse" : "bg-red-400"}`}
-                      ></div>
-                      {restaurant.isOpen ? "OPEN" : "CLOSED"}
-                    </span>
-                  )}
-                </div>
               </div>
 
               <div className="p-6">
+                {/* Status & Actions Bar */}
+                <div className="flex items-center justify-between gap-4 mb-6 pb-6 border-b border-white/5">
+                  <div className="flex flex-wrap gap-2">
+                    <span
+                      className={`
+                      px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border 
+                      ${
+                        restaurant.status === "active"
+                          ? "bg-green-500/10 text-green-400 border-green-500/20"
+                          : restaurant.status === "pending"
+                            ? "bg-orange-500/10 text-orange-400 border-orange-500/20"
+                            : "bg-red-500/10 text-red-400 border-red-500/20"
+                      }
+                    `}
+                    >
+                      {restaurant.status}
+                    </span>
+
+                    {restaurant.status === "active" && (
+                      <div className="flex flex-wrap gap-2 items-center">
+                        <span
+                          className={`
+                          px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border flex items-center gap-1.5
+                          ${
+                            restaurant.isOpen
+                              ? "bg-[#98E32F]/10 text-[#98E32F] border-[#98E32F]/20"
+                              : "bg-red-500/10 text-red-400 border-red-500/20"
+                          }
+                        `}
+                        >
+                          <div
+                            className={`w-1.5 h-1.5 rounded-full ${restaurant.isOpen ? "bg-[#98E32F] animate-pulse" : "bg-red-400"}`}
+                          ></div>
+                          {restaurant.isOpen ? "OPEN" : "CLOSED"}
+                        </span>
+
+                        {restaurant.isManualOverride && (
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              try {
+                                await updateRestaurant.mutateAsync({
+                                  id: restaurant._id,
+                                  data: { resetOverride: true },
+                                });
+                                toast.success("Schedule resumed");
+                              } catch (error) {
+                                console.error(error);
+                                toast.error("Failed to resume schedule");
+                              }
+                            }}
+                            className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-xl text-[9px] font-black uppercase tracking-wider border border-white/10 transition-all text-white/40 hover:text-white"
+                          >
+                            Reschedule
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {restaurant.status === "active" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSchedulingRestaurant(restaurant);
+                          setIsScheduleModalOpen(true);
+                        }}
+                        className="p-2.5 rounded-xl border border-white/10 bg-white/5 text-white/60 hover:text-[#98E32F] hover:border-[#98E32F]/50 transition-all"
+                        title="Operating Hours"
+                      >
+                        <Clock size={18} />
+                      </button>
+                    )}
+
+                    {restaurant.status === "active" && (
+                      <button
+                        onClick={(e) => handleToggleOpen(restaurant, e)}
+                        className={`p-2.5 rounded-xl border transition-all ${
+                          restaurant.isOpen
+                            ? "bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20"
+                            : "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20"
+                        }`}
+                        title={
+                          restaurant.isOpen ? "Stop Orders" : "Start Orders"
+                        }
+                      >
+                        <Power size={18} />
+                      </button>
+                    )}
+                  </div>
+                </div>
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="text-xl font-bold mb-1">
@@ -585,37 +896,27 @@ export default function OwnerRestaurantsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center gap-3 text-sm text-white/70">
-                    <Phone size={14} className="text-[#98E32F]" />
-                    <span>{restaurant.contactNumber}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-white/70">
-                    <Mail size={14} className="text-[#98E32F]" />
-                    <span className="truncate">{restaurant.email}</span>
-                  </div>
-                  <div className="pt-6 border-t border-white/5 flex gap-3">
-                    <Link
-                      href={`/restaurants/${restaurant._id}`}
-                      className="w-full bg-white/5 hover:bg-[#98E32F] hover:text-[#013644] border border-white/10 hover:border-[#98E32F] py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 group/btn"
+                <div className="pt-6 border-t border-white/5 flex gap-3">
+                  <Link
+                    href={`/restaurants/${restaurant._id}`}
+                    className="w-full bg-white/5 hover:bg-[#98E32F] hover:text-[#013644] border border-white/10 hover:border-[#98E32F] py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 group/btn"
+                  >
+                    View Dashboard
+                    <ArrowRight
+                      size={16}
+                      className="group-hover/btn:translate-x-1 transition-transform"
+                    />
+                  </Link>
+                  {restaurant.status === "inactive" && (
+                    <button
+                      onClick={() => {
+                        submitForVerification.mutate(restaurant._id);
+                      }}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 bg-[#98E32F] text-[#013644] hover:bg-[#86c929]"
                     >
-                      View Dashboard
-                      <ArrowRight
-                        size={16}
-                        className="group-hover/btn:translate-x-1 transition-transform"
-                      />
-                    </Link>
-                    {restaurant.status === "inactive" && (
-                      <button
-                        onClick={() => {
-                          submitForVerification.mutate(restaurant._id);
-                        }}
-                        className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 bg-[#98E32F] text-[#013644] hover:bg-[#86c929]"
-                      >
-                        Verify Now <ChevronRight size={14} />
-                      </button>
-                    )}
-                  </div>
+                      Verify Now <ChevronRight size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -650,7 +951,7 @@ export default function OwnerRestaurantsPage() {
             onClick={handleCancel}
           ></div>
 
-          <div className="relative bg-[#002833] border border-white/10 w-full sm:max-w-3xl h-full sm:h-auto lg:h-[90vh] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col sm:max-h-[95vh]">
+          <div className="relative bg-[#002833] border border-white/10 w-full sm:max-w-3xl h-full sm:h-auto sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[100vh] sm:max-h-[90vh]">
             <form
               onSubmit={handleSubmit(onSubmit)}
               className="flex-1 overflow-hidden flex flex-col"
@@ -1182,6 +1483,12 @@ export default function OwnerRestaurantsPage() {
           </div>
         </div>
       )}
+      <ScheduleModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        restaurant={schedulingRestaurant}
+        onUpdate={handleUpdateSchedule}
+      />
       <ConfirmationModal
         isOpen={deleteConfirmation.isOpen}
         onClose={() =>

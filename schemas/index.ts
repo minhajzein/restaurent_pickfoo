@@ -26,6 +26,13 @@ export const restaurantSchema = z.object({
     healthCertificateUrl: z.string().optional(),
   }),
   image: z.string().optional(),
+  isManualOverride: z.boolean(),
+  openingHours: z.array(z.object({
+    day: z.number().min(0).max(6),
+    openTime: z.string(),
+    closeTime: z.string(),
+    isClosed: z.boolean(),
+  })),
 });
 
 export type RestaurantFormData = z.infer<typeof restaurantSchema>;

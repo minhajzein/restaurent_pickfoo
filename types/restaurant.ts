@@ -9,6 +9,7 @@ export interface Restaurant extends RestaurantFormData {
   updatedAt: string;
   // Metadata
   isOpen: boolean;
+  resetOverride?: boolean;
   rating?: number;
   numReviews?: number;
 }
