@@ -44,7 +44,7 @@ export default function RestaurantDashboardPage() {
       <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4">
         <h2 className="text-2xl font-bold text-white">Restaurant Not Found</h2>
         <Link href="/restaurants" className="text-[#98E32F] hover:underline flex items-center gap-2">
-          <ArrowLeft size={16} /> Back to Restaurants
+          <ArrowLeft size={16} /> Back to My Restaurant
         </Link>
       </div>
     );
@@ -164,10 +164,10 @@ export default function RestaurantDashboardPage() {
                   <UtensilsCrossed size={28} className="sm:w-8 sm:h-8" />
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold mb-2">No Items Assigned</h3>
-                <p className="text-white/40 max-w-md mx-auto mb-6 text-sm">This restaurant doesn&apos;t have any menu items assigned to it yet. Go to the main Menu Library to assign items.</p>
+                <p className="text-white/40 max-w-md mx-auto mb-6 text-sm">Your restaurant doesn&apos;t have any menu items yet. Add items from the Menu Items page.</p>
 
                 <Link href="/menu" className="inline-flex items-center gap-2 bg-[#98E32F] text-[#013644] px-6 py-3 rounded-xl font-bold hover:bg-[#86c929] transition-all text-sm">
-                   Go to Menu Library <ArrowLeft size={16} className="rotate-180" />
+                   Go to Menu Items <ArrowLeft size={16} className="rotate-180" />
                 </Link>
              </div>
            ) : (

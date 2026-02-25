@@ -49,6 +49,7 @@ export const menuItemSchema = z.object({
   isVeg: z.boolean(),
   isActive: z.boolean(),
   image: z.string().optional(),
+  ingredients: z.array(z.string().min(1, 'Ingredient name is required')).optional(),
 });
 
 export type MenuItemFormData = z.infer<typeof menuItemSchema>;

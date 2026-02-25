@@ -23,6 +23,7 @@ import {
   Clock,
 } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useForm, SubmitHandler, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { restaurantSchema, type RestaurantFormData } from "@/schemas";
@@ -310,6 +311,16 @@ export default function OwnerRestaurantsPage() {
       toast.error("Failed to update schedule");
     }
   };
+
+  const searchParams = useSearchParams();
+
+  // Auto-open onboarding modal when redirected with onboard=1 and no restaurant
+  useEffect(() => {
+    const onboard = searchParams.get("onboard");
+    if (onboard === "1" && (!restaurants || restaurants.length === 0)) {
+      setIsAddModalOpen(true);
+    }
+  }, [searchParams, restaurants]);
 
   const {
     register,
@@ -703,38 +714,60 @@ export default function OwnerRestaurantsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold">My Restaurants</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold">My Restaurant</h2>
           <p className="text-white/60 text-sm sm:text-base">
-            Manage your business locations and their status.
+            Manage your restaurant details and status.
           </p>
         </div>
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="bg-[#98E32F] text-[#013644] px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-[#86c929] transition-all transform hover:scale-105 active:scale-95 w-full sm:w-auto"
-        >
-          <Plus size={20} />
-          Add Restaurant
-        </button>
+        {(!restaurants || restaurants.length === 0) && (
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-[#98E32F] text-[#013644] px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-[#86c929] transition-all transform hover:scale-105 active:scale-95 w-full sm:w-auto"
+          >
+            <Plus size={20} />
+            Add Restaurant
+          </button>
+        )}
+        {restaurants?.length === 1 && (
+          <button
+            onClick={() => handleEdit(restaurants[0])}
+            className="bg-white/10 hover:bg-white/20 text-white border border-white/10 px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all w-full sm:w-auto"
+          >
+            <Edit2 size={20} />
+            Edit Restaurant
+          </button>
+        )}
       </div>
 
-      {/* Grid */}
+      {/* Content */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="bg-white/5 border border-white/10 rounded-3xl sm:rounded-[2.5rem] h-[400px] animate-pulse"
-            ></div>
-          ))}
+        <div className="bg-white/5 border border-white/10 rounded-[2.5rem] h-[260px] animate-pulse" />
+      ) : !restaurants || restaurants.length === 0 ? (
+        <div className="border-2 border-dashed border-white/10 rounded-3xl sm:rounded-[2.5rem] flex flex-col items-center justify-center p-8 sm:p-12 text-center gap-3">
+          <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-2">
+            <Store size={28} className="text-white/30" />
+          </div>
+          <h3 className="text-xl sm:text-2xl font-bold text-white">
+            No restaurant added yet
+          </h3>
+          <p className="text-sm text-white/50 max-w-md mx-auto">
+            Add your restaurant to start receiving orders, managing your menu and tracking performance.
+          </p>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="mt-4 bg-[#98E32F] text-[#013644] px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-[#86c929] transition-all transform hover:scale-105 active:scale-95"
+          >
+            <Plus size={20} />
+            Add Restaurant
+          </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
-          {restaurants?.map((restaurant: Restaurant) => (
-            <div
-              key={restaurant._id}
-              className="bg-white/5 border border-white/10 rounded-[2.5rem] overflow-hidden group hover:border-[#98E32F]/30 transition-all"
-            >
-              <div className="relative h-48">
+        (() => {
+          const restaurant = restaurants[0] as Restaurant;
+          const isActive = restaurant.status === "active";
+          return (
+            <div className="bg-white/5 border border-white/10 rounded-[2.5rem] overflow-hidden">
+              <div className="relative h-48 sm:h-60">
                 <Image
                   src={
                     restaurant.image ||
@@ -742,205 +775,147 @@ export default function OwnerRestaurantsPage() {
                   }
                   alt={restaurant.name}
                   fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#013644] via-[#013644]/60 to-transparent" />
 
-                {/* Open/Close Toggle */}
-              </div>
-
-              <div className="p-6">
-                {/* Status & Actions Bar */}
-                <div className="flex items-center justify-between gap-4 mb-6 pb-6 border-b border-white/5">
-                  <div className="flex flex-wrap gap-2">
-                    <span
-                      className={`
-                      px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border 
-                      ${
-                        restaurant.status === "active"
-                          ? "bg-green-500/10 text-green-400 border-green-500/20"
-                          : restaurant.status === "pending"
-                            ? "bg-orange-500/10 text-orange-400 border-orange-500/20"
-                            : "bg-red-500/10 text-red-400 border-red-500/20"
-                      }
-                    `}
-                    >
-                      {restaurant.status}
-                    </span>
-
-                    {restaurant.status === "active" && (
-                      <div className="flex flex-wrap gap-2 items-center">
+                <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${
+                          isActive
+                            ? "bg-green-500/10 text-green-400 border-green-500/30"
+                            : restaurant.status === "pending"
+                              ? "bg-orange-500/10 text-orange-400 border-orange-500/30"
+                              : "bg-red-500/10 text-red-400 border-red-500/30"
+                        }`}
+                      >
+                        {restaurant.status}
+                      </span>
+                      {isActive && (
                         <span
-                          className={`
-                          px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border flex items-center gap-1.5
-                          ${
+                          className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border flex items-center gap-1.5 ${
                             restaurant.isOpen
                               ? "bg-[#98E32F]/10 text-[#98E32F] border-[#98E32F]/20"
                               : "bg-red-500/10 text-red-400 border-red-500/20"
-                          }
-                        `}
+                          }`}
                         >
-                          <div
-                            className={`w-1.5 h-1.5 rounded-full ${restaurant.isOpen ? "bg-[#98E32F] animate-pulse" : "bg-red-400"}`}
-                          ></div>
-                          {restaurant.isOpen ? "OPEN" : "CLOSED"}
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              restaurant.isOpen
+                                ? "bg-[#98E32F] animate-pulse"
+                                : "bg-red-400"
+                            }`}
+                          />
+                          {restaurant.isOpen ? "Open" : "Closed"}
                         </span>
-
-                        {restaurant.isManualOverride && (
-                          <button
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              try {
-                                await updateRestaurant.mutateAsync({
-                                  id: restaurant._id,
-                                  data: { resetOverride: true },
-                                });
-                                toast.success("Schedule resumed");
-                              } catch (error) {
-                                console.error(error);
-                                toast.error("Failed to resume schedule");
-                              }
-                            }}
-                            className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-xl text-[9px] font-black uppercase tracking-wider border border-white/10 transition-all text-white/40 hover:text-white"
-                          >
-                            Reschedule
-                          </button>
-                        )}
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-2xl sm:text-3xl font-black leading-tight">
+                        {restaurant.name}
+                      </h3>
+                      <div className="mt-1 flex flex-wrap items-center gap-3 text-xs sm:text-sm text-white/70">
+                        <span className="inline-flex items-center gap-1.5">
+                          <MapPin size={14} />
+                          {restaurant.address.street}, {restaurant.address.city},{" "}
+                          {restaurant.address.state}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Phone size={14} />
+                          {restaurant.contactNumber}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Mail size={14} />
+                          {restaurant.email}
+                        </span>
                       </div>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {restaurant.status === "active" && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSchedulingRestaurant(restaurant);
-                          setIsScheduleModalOpen(true);
-                        }}
-                        className="p-2.5 rounded-xl border border-white/10 bg-white/5 text-white/60 hover:text-[#98E32F] hover:border-[#98E32F]/50 transition-all"
-                        title="Operating Hours"
-                      >
-                        <Clock size={18} />
-                      </button>
-                    )}
-
-                    {restaurant.status === "active" && (
-                      <button
-                        onClick={(e) => handleToggleOpen(restaurant, e)}
-                        className={`p-2.5 rounded-xl border transition-all ${
-                          restaurant.isOpen
-                            ? "bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20"
-                            : "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20"
-                        }`}
-                        title={
-                          restaurant.isOpen ? "Stop Orders" : "Start Orders"
-                        }
-                      >
-                        <Power size={18} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-bold mb-1">
-                      {restaurant.name}
-                    </h3>
-                    <div className="flex items-center gap-2 text-white/50 text-sm">
-                      <MapPin size={14} />
-                      <span>
-                        {restaurant.address.city}, {restaurant.address.state}
-                      </span>
                     </div>
                   </div>
-                  <div className="relative">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveDropdownId(
-                          activeDropdownId === restaurant._id
-                            ? null
-                            : restaurant._id,
-                        );
-                      }}
-                      className="p-2 hover:bg-white/5 rounded-xl text-white/40"
-                    >
-                      <MoreVertical size={20} />
-                    </button>
 
-                    {activeDropdownId === restaurant._id && (
+                  <div className="flex flex-wrap gap-2">
+                    {isActive && (
                       <>
-                        <div
-                          className="fixed inset-0 z-10"
-                          onClick={() => setActiveDropdownId(null)}
-                        ></div>
-                        <div className="absolute right-0 top-full mt-2 w-48 bg-[#002833] border border-white/10 rounded-xl shadow-xl overflow-hidden z-20 flex flex-col py-1">
-                          <button
-                            onClick={() => handleEdit(restaurant)}
-                            className="flex items-center gap-2 px-4 py-3 hover:bg-white/5 text-left text-sm text-white/80"
-                          >
-                            <Edit2 size={16} />
-                            Edit Details
-                          </button>
-                          <button
-                            onClick={() => handleDelete(restaurant)}
-                            className="flex items-center gap-2 px-4 py-3 hover:bg-red-500/10 text-left text-sm text-red-400"
-                          >
-                            <Trash2 size={16} />
-                            Delete Restaurant
-                          </button>
-                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSchedulingRestaurant(restaurant);
+                            setIsScheduleModalOpen(true);
+                          }}
+                          className="px-4 py-2 rounded-xl bg-white/10 text-white/80 text-xs font-bold uppercase tracking-widest border border-white/20 hover:bg-white/20 transition-all flex items-center gap-2"
+                        >
+                          <Clock size={16} />
+                          Schedule
+                        </button>
+                        <button
+                          onClick={(e) => handleToggleOpen(restaurant, e)}
+                          className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest border flex items-center gap-2 ${
+                            restaurant.isOpen
+                              ? "bg-red-500/10 text-red-400 border-red-500/40 hover:bg-red-500/20"
+                              : "bg-[#98E32F]/10 text-[#98E32F] border-[#98E32F]/40 hover:bg-[#98E32F]/20"
+                          }`}
+                        >
+                          <Power size={16} />
+                          {restaurant.isOpen ? "Close Orders" : "Open Orders"}
+                        </button>
                       </>
                     )}
+                    <button
+                      onClick={() => handleEdit(restaurant)}
+                      className="px-4 py-2 rounded-xl bg-white text-[#013644] text-xs font-bold uppercase tracking-widest hover:bg-[#98E32F] hover:text-[#013644] flex items-center gap-2 transition-all"
+                    >
+                      <Edit2 size={16} />
+                      Edit
+                    </button>
                   </div>
                 </div>
+              </div>
 
-                <div className="pt-6 border-t border-white/5 flex gap-3">
-                  <Link
-                    href={`/restaurants/${restaurant._id}`}
-                    className="w-full bg-white/5 hover:bg-[#98E32F] hover:text-[#013644] border border-white/10 hover:border-[#98E32F] py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 group/btn"
-                  >
-                    View Dashboard
-                    <ArrowRight
-                      size={16}
-                      className="group-hover/btn:translate-x-1 transition-transform"
-                    />
-                  </Link>
-                  {restaurant.status === "inactive" && (
-                    <button
-                      onClick={() => {
-                        submitForVerification.mutate(restaurant._id);
-                      }}
-                      className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 bg-[#98E32F] text-[#013644] hover:bg-[#86c929]"
+              <div className="p-6 sm:p-8 flex flex-col md:flex-row gap-6">
+                <div className="flex-1 space-y-3 text-sm text-white/70">
+                  <h4 className="text-xs font-black uppercase tracking-[0.25em] text-white/40">
+                    Description
+                  </h4>
+                  <p>{restaurant.description}</p>
+                </div>
+                <div className="w-full md:w-56 space-y-3">
+                  <h4 className="text-xs font-black uppercase tracking-[0.25em] text-white/40">
+                    Quick Actions
+                  </h4>
+                  <div className="space-y-2">
+                    <Link
+                      href={`/restaurants/${restaurant._id}`}
+                      className="w-full inline-flex items-center justify-between px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold transition-all"
                     >
-                      Verify Now <ChevronRight size={14} />
+                      View Restaurant Dashboard
+                      <ArrowRight size={16} />
+                    </Link>
+                    {restaurant.status === "inactive" && (
+                      <button
+                        onClick={() =>
+                          submitForVerification.mutate(restaurant._id)
+                        }
+                        className="w-full inline-flex items-center justify-between px-4 py-3 rounded-xl bg-[#98E32F] text-[#013644] text-sm font-semibold hover:bg-[#86c929] transition-all"
+                      >
+                        Submit for Verification
+                        <ChevronRight size={16} />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDelete(restaurant)}
+                      className="w-full inline-flex items-center justify-between px-4 py-3 rounded-xl bg-red-500/10 text-red-400 text-sm font-semibold hover:bg-red-500/20 transition-all"
+                    >
+                      Delete Restaurant
+                      <Trash2 size={16} />
                     </button>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>
-          ))}
-
-          {/* Add New Placeholder */}
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="border-2 border-dashed border-white/10 rounded-3xl sm:rounded-[2.5rem] flex flex-col items-center justify-center p-8 hover:border-[#98E32F]/50 hover:bg-[#98E32F]/5 group transition-all h-full min-h-[300px] sm:min-h-[400px]"
-          >
-            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <Plus
-                size={32}
-                className="text-white/20 group-hover:text-[#98E32F]"
-              />
-            </div>
-            <p className="text-lg sm:text-xl font-bold text-white/40 group-hover:text-white">
-              Add New Restaurant
-            </p>
-            <p className="text-xs sm:text-sm text-white/20 mt-1">
-              Expand your business
-            </p>
-          </button>
-        </div>
+          );
+        })()
       )}
 
       {/* Add Restaurant Modal (Overlay) */}

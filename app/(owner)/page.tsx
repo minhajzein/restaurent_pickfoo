@@ -6,7 +6,9 @@ import {
   ClipboardList,
   Wallet,
   Clock,
-  ChevronRight
+  ChevronRight,
+  Star,
+  Activity,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRestaurants } from '@/hooks/useRestaurants';
@@ -16,23 +18,65 @@ import * as useAuthStore from '@/store/useAuthStore';
 import { Restaurant } from '@/types/restaurant';
 import { MenuItem } from '@/types/menu';
 import { Order } from '@/hooks/useOrders';
+import { useReviews } from '@/hooks/useReviews';
+import { Review } from '@/types/review';
 
 export default function OwnerDashboardPage() {
   const { user } = useAuthStore.useAuthStore();
   const { useMyRestaurants } = useRestaurants();
   const { useMyMenu } = useMenu();
   const { useMyOrders } = useOrders();
+  const { useMyReviews } = useReviews();
 
   const { data: restaurants } = useMyRestaurants();
   const { data: menuItems } = useMyMenu();
   const { data: orders } = useMyOrders();
+  const { data: reviews } = useMyReviews();
+
+  const totalReviews = reviews?.length || 0;
+  const averageRating =
+    reviews && totalReviews > 0
+      ? (
+          reviews.reduce((acc: number, r: Review) => acc + r.rating, 0) /
+          totalReviews
+        ).toFixed(1)
+      : '0.0';
+
+  const statusBuckets: Order['status'][] = [
+    'pending',
+    'confirmed',
+    'preparing',
+    'out-for-delivery',
+    'delivered',
+    'cancelled',
+  ];
+
+  const statusStats = statusBuckets.map((status) => ({
+    status,
+    count:
+      orders?.filter((o: Order) => o.status === status).length ??
+      0,
+  }));
+
+  const maxStatusCount =
+    statusStats.reduce(
+      (max, s) => (s.count > max ? s.count : max),
+      0,
+    ) || 1;
 
   const stats = [
-    { 
-      name: 'Total Restaurants', 
-      value: restaurants?.length || '0', 
-      icon: Store, 
-      trend: `${restaurants?.filter((r: Restaurant) => r.status === 'active').length || 0} active` 
+    {
+      name: 'My Restaurant',
+      value: restaurants?.[0]?.name || 'Not created',
+      icon: Store,
+      trend:
+        restaurants?.length
+          ? restaurants[0]?.status === 'active'
+            ? 'Active'
+            : restaurants[0]?.status === 'pending'
+              ? 'Pending verification'
+              : 'Inactive'
+          : 'Create your restaurant'
     },
     { 
       name: 'Total Menu Items', 
@@ -125,45 +169,109 @@ export default function OwnerDashboardPage() {
           </div>
         </div>
 
-        {/* Verification Status */}
-        <div className="bg-white/5 border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8">
-          <div className="flex items-center gap-3 mb-6 sm:mb-8">
-             <div className="p-2 bg-[#98E32F]/20 rounded-xl">
-                <Store className="text-[#98E32F]" size={18} />
-             </div>
-             <h3 className="text-lg sm:text-xl font-bold">Network Status</h3>
+        {/* Insights: Orders graph + Reviews */}
+        <div className="space-y-6">
+          {/* Order status graph */}
+          <div className="bg-white/5 border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-6 sm:mb-8">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#98E32F]/20 rounded-xl">
+                  <Activity className="text-[#98E32F]" size={18} />
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold">Order Pipeline</h3>
+                  <p className="text-white/40 text-[10px] sm:text-xs uppercase tracking-widest font-black">
+                    Volume by status
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] text-white/40 font-black uppercase tracking-widest">
+                {orders?.length || 0} orders
+              </span>
+            </div>
+            <div className="space-y-3">
+              {statusStats.map((s) => (
+                <div key={s.status} className="flex items-center gap-3">
+                  <span className="w-28 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40 truncate">
+                    {s.status.replace(/-/g, ' ')}
+                  </span>
+                  <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#98E32F] rounded-full transition-all"
+                      style={{ width: `${(s.count / maxStatusCount) * 100 || 0}%` }}
+                    />
+                  </div>
+                  <span className="w-6 text-right text-[10px] font-mono text-white/60">
+                    {s.count}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="space-y-4 sm:space-y-6">
-            {restaurants?.slice(0, 3).map((res: Restaurant) => (
-               <div key={res._id} className="p-4 sm:p-5 bg-white/[0.02] border border-white/5 rounded-3xl">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className={`p-2 rounded-xl shrink-0 ${res.status === 'active' ? 'bg-[#98E32F]/20 text-[#98E32F]' : 'bg-white/10 text-white/30'}`}>
-                      <Store size={14} className="sm:w-4 sm:h-4" />
-                    </div>
+
+          {/* Reviews snapshot */}
+          <div className="bg-white/5 border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-6 sm:mb-8">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#98E32F]/20 rounded-xl">
+                  <Star className="text-[#98E32F]" size={18} />
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold">Latest Reviews</h3>
+                  <p className="text-white/40 text-[10px] sm:text-xs uppercase tracking-widest font-black">
+                    What customers are saying
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] text-white/40 uppercase tracking-widest font-black">
+                  Average Rating
+                </p>
+                <p className="text-xl sm:text-2xl font-black text-[#98E32F]">
+                  {averageRating}
+                </p>
+              </div>
+            </div>
+
+            {totalReviews === 0 ? (
+              <p className="text-white/30 text-sm italic">
+                You don&apos;t have any reviews yet. As customers rate their orders, a snapshot will appear here.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {reviews?.slice(0, 3).map((review: Review) => (
+                  <div
+                    key={review._id}
+                    className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 flex justify-between items-center gap-3"
+                  >
                     <div className="min-w-0">
-                        <h4 className="font-bold text-sm leading-tight truncate">{res.name}</h4>
-                        <p className="text-[10px] text-white/30 truncate">{res.address.city}</p>
+                      <p className="text-xs font-semibold text-white truncate">
+                        {review.user?.name || 'Customer'}
+                      </p>
+                      <p className="text-[10px] text-white/40 truncate max-w-[180px]">
+                        {review.comment}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Star
+                        size={14}
+                        className="text-[#98E32F]"
+                        fill="currentColor"
+                      />
+                      <span className="text-sm font-bold text-white">
+                        {review.rating.toFixed(1)}
+                      </span>
                     </div>
                   </div>
-                  <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${
-                    res.status === 'active' ? 'text-[#98E32F]' : 
-                    res.status === 'pending' ? 'text-orange-400' : 'text-red-400'
-                  }`}>
-                    <div className={`w-1.5 h-1.5 rounded-full ${
-                        res.status === 'active' ? 'bg-[#98E32F]' : 
-                        res.status === 'pending' ? 'bg-orange-400' : 'bg-red-400'
-                    }`} />
-                    {res.status}
-                  </div>
-               </div>
-            ))}
-            {restaurants?.length === 0 && (
-               <div className="py-8 text-center text-white/20 italic text-sm">
-                  Register your first restaurant to start.
-               </div>
+                ))}
+              </div>
             )}
-            <Link href="/restaurants" className="block w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">
-               Manage Network
+
+            <Link
+              href="/reviews"
+              className="block w-full mt-5 py-3 bg-white/5 border border-white/10 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+            >
+              View All Reviews
             </Link>
           </div>
         </div>

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { io } from "socket.io-client";
 import { toast } from "sonner";
+import api from "@/lib/axios";
 
 export default function OwnerLayout({
   children,
@@ -39,6 +40,39 @@ export default function OwnerLayout({
       router.push("/login");
     }
   }, [isInitialized, isAuthenticated, user, router]);
+
+  // Redirect owners without a restaurant to onboarding
+  useEffect(() => {
+    const shouldCheckRestaurants =
+      isInitialized &&
+      isAuthenticated &&
+      user?.role === "owner" &&
+      pathname !== "/restaurants";
+
+    if (!shouldCheckRestaurants) return;
+
+    let cancelled = false;
+
+    const checkRestaurants = async () => {
+      try {
+        const { data } = await api.get("/restaurants/my-restaurants");
+        if (cancelled) return;
+
+        const restaurants = data?.data as unknown[] | undefined;
+        if (!restaurants || restaurants.length === 0) {
+          router.push("/restaurants?onboard=1");
+        }
+      } catch {
+        // Silently ignore; auth/layout guard will handle unauthorized states
+      }
+    };
+
+    void checkRestaurants();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isInitialized, isAuthenticated, user, pathname, router]);
 
   // Close mobile menu on path change
   useEffect(() => {
@@ -127,7 +161,7 @@ export default function OwnerLayout({
 
   const navItems = [
     { name: "Dashboard", icon: LayoutDashboard, href: "/" },
-    { name: "My Restaurants", icon: Store, href: "/restaurants" },
+    { name: "My Restaurant", icon: Store, href: "/restaurants" },
     { name: "Menu Items", icon: UtensilsCrossed, href: "/menu" },
     { name: "Orders", icon: ClipboardList, href: "/orders" },
     { name: "Transactions", icon: Wallet, href: "/transactions" },

@@ -70,10 +70,7 @@ export default function OwnerMenuPage() {
   // Image states
   const [imageUrl, setImageUrl] = useState<string>('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-
-  // Sync state
-  const [selectedItemForSync, setSelectedItemForSync] = useState<MenuItem | null>(null);
-  const [syncedRestaurants, setSyncedRestaurants] = useState<string[]>([]);
+  const [ingredientInput, setIngredientInput] = useState('');
 
   const {
     register,
@@ -93,7 +90,8 @@ export default function OwnerMenuPage() {
       variants: [],
       isVeg: true,
       isActive: true,
-      image: ''
+      image: '',
+      ingredients: [],
     }
   });
 
@@ -117,6 +115,7 @@ export default function OwnerMenuPage() {
     setValue('price', item.price);
     setValue('isVeg', item.isVeg);
     setValue('isActive', item.isActive);
+    setValue('ingredients', item.ingredients ?? []);
     
     // Check if variants exist and set them, otherwise empty array
     if (item.variants && item.variants.length > 0) {
@@ -183,8 +182,15 @@ export default function OwnerMenuPage() {
         await updateMenuItem.mutateAsync({ id: editingItemId, data });
         toast.success('Menu item updated successfully!');
       } else {
-        await createMenuItem.mutateAsync(data);
-        toast.success('Master item created successfully!');
+        const created = await createMenuItem.mutateAsync(data);
+        // Auto-assign new item to the owner's single restaurant
+        if (restaurants?.length === 1 && created?._id) {
+          await assignToRestaurants.mutateAsync({
+            id: created._id,
+            restaurantIds: [restaurants[0]._id],
+          });
+        }
+        toast.success('Menu item added successfully!');
       }
       handleCloseModal();
     } catch (error: any) {
@@ -194,25 +200,13 @@ export default function OwnerMenuPage() {
   };
 
 
-  const handleSync = async (itemId: string) => {
-    try {
-      await assignToRestaurants.mutateAsync({ id: itemId, restaurantIds: syncedRestaurants });
-      toast.success('Synced successfully!');
-      setSelectedItemForSync(null);
-      setSyncedRestaurants([]);
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || 'Sync failed';
-      toast.error(errorMessage);
-    }
-  };
-
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold">Menu Library</h2>
-          <p className="text-white/60 text-sm sm:text-base">Manage items and sync them across all your restaurants.</p>
+          <h2 className="text-2xl sm:text-3xl font-bold">Menu Items</h2>
+          <p className="text-white/60 text-sm sm:text-base">Manage your restaurant menu.</p>
         </div>
         <button 
           onClick={() => {
@@ -224,7 +218,7 @@ export default function OwnerMenuPage() {
           className="bg-[#98E32F] text-[#013644] px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-[#86c929] transition-all transform hover:scale-105 active:scale-95 w-full sm:w-auto text-sm sm:text-base"
         >
           <Plus size={20} />
-          Add Item to Library
+          Add Menu Item
         </button>
       </div>
 
@@ -314,30 +308,15 @@ export default function OwnerMenuPage() {
                   </div>
 
                   <div className="mt-2 flex flex-wrap gap-1.5 h-16 overflow-y-auto custom-scrollbar content-start">
-                    {item.restaurants?.length === 0 && (
-                      <span className="text-[10px] text-white/20 italic">Not synced to any restaurant</span>
+                    {restaurants?.length === 1 && (
+                      <span className="text-[10px] text-white/40 bg-white/5 border border-white/5 px-2 py-1 rounded-lg flex items-center gap-1 w-fit">
+                        <Store size={10} /> On your menu
+                      </span>
                     )}
-                    {item.restaurants?.map((res) => {
-                      if (typeof res === 'string') return null;
-                      return (
-                        <span key={res._id} className="bg-white/5 border border-white/5 text-[10px] text-white/50 px-2 py-1 rounded-lg flex items-center gap-1 whitespace-nowrap">
-                          <Store size={10} /> {res.name}
-                        </span>
-                      );
-                    })}
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
-                   <button 
-                      onClick={() => {
-                        setSelectedItemForSync(item);
-                        setSyncedRestaurants(item.restaurants?.map((r) => (typeof r === 'string' ? r : r._id)) || []);
-                      }}
-                      className="text-[10px] text-[#98E32F] hover:underline font-bold flex items-center gap-1"
-                    >
-                      + Sync
-                    </button>
+                <div className="flex items-center justify-end mt-2 pt-2 border-t border-white/5">
                   <div className="flex gap-1">
                     <button 
                       onClick={() => handleEdit(item)}
@@ -367,8 +346,8 @@ export default function OwnerMenuPage() {
             <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
               <Plus size={24} />
             </div>
-            <span className="font-bold text-lg">Add New Menu Item</span>
-            <span className="text-xs">Create once, use everywhere</span>
+            <span className="font-bold text-lg">Add Menu Item</span>
+            <span className="text-xs">Add a new item to your restaurant menu</span>
           </button>
         </div>
       )}
@@ -387,8 +366,8 @@ export default function OwnerMenuPage() {
                     <UtensilsCrossed size={20} className="text-[#98E32F] sm:w-6 sm:h-6" />
                   </div>
                   <div>
-                    <h3 className="text-lg sm:text-xl font-bold">Add Item to Library</h3>
-                    <p className="text-white/40 text-[9px] sm:text-[11px] uppercase tracking-widest font-bold">Master Menu Creation</p>
+                    <h3 className="text-lg sm:text-xl font-bold">Add Menu Item</h3>
+                    <p className="text-white/40 text-[9px] sm:text-[11px] uppercase tracking-widest font-bold">Create a new item for your menu</p>
                   </div>
                 </div>
                 <button 
@@ -587,6 +566,76 @@ export default function OwnerMenuPage() {
                       {errors.description && <p className="text-red-500 text-[10px] mt-1 ml-1 font-bold italic">{errors.description.message}</p>}
                     </div>
 
+                    {/* Ingredients */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-white/30 mb-1 block uppercase tracking-wider ml-1">
+                        Ingredients
+                      </label>
+                      <p className="text-[10px] text-white/30 ml-1 mb-1">
+                        Add key ingredients like <span className="text-[#98E32F] font-semibold">“Basmati rice”</span>, <span className="text-[#98E32F] font-semibold">“Chicken”</span>, <span className="text-[#98E32F] font-semibold">“Ghee”</span>.
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={ingredientInput}
+                          onChange={(e) => setIngredientInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              const trimmed = ingredientInput.trim();
+                              if (!trimmed) return;
+                              const current = watch('ingredients') || [];
+                              if (!current.includes(trimmed)) {
+                                setValue('ingredients', [...current, trimmed]);
+                              }
+                              setIngredientInput('');
+                            }
+                          }}
+                          placeholder="Type ingredient and press Enter"
+                          className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-[#98E32F]/50 outline-none placeholder:text-white/20"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const trimmed = ingredientInput.trim();
+                            if (!trimmed) return;
+                            const current = watch('ingredients') || [];
+                            if (!current.includes(trimmed)) {
+                              setValue('ingredients', [...current, trimmed]);
+                            }
+                            setIngredientInput('');
+                          }}
+                          className="px-4 py-3 rounded-2xl bg-[#98E32F] text-[#013644] text-xs font-black uppercase tracking-widest hover:bg-[#86c929] transition-all"
+                        >
+                          Add
+                        </button>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {(watch('ingredients') || []).map((ing, idx) => (
+                          <button
+                            key={`${ing}-${idx}`}
+                            type="button"
+                            onClick={() => {
+                              const current = watch('ingredients') || [];
+                              setValue(
+                                'ingredients',
+                                current.filter((v) => v !== ing),
+                              );
+                            }}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] text-white/70 hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-300 transition-all"
+                          >
+                            <span>{ing}</span>
+                            <X size={10} />
+                          </button>
+                        ))}
+                        {(watch('ingredients') || []).length === 0 && (
+                          <span className="text-[10px] text-white/25 italic">
+                            No ingredients added yet.
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-6">
                       <div>
                         <label className="text-[10px] font-bold text-white/30 mb-3 block uppercase tracking-wider ml-1">Dietary Type</label>
@@ -653,63 +702,6 @@ export default function OwnerMenuPage() {
         </div>
       )}
 
-      {/* Sync Modal */}
-      {selectedItemForSync && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#013644]/95 backdrop-blur-md" onClick={() => setSelectedItemForSync(null)}></div>
-          <div className="relative bg-[#002833] border border-white/10 w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden">
-            <div className="p-8 border-b border-white/5 flex items-center gap-4">
-              <div className="p-3 bg-[#98E32F]/20 rounded-2xl text-[#98E32F]">
-                <Store size={24} />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold">Sync to Restaurants</h3>
-                <p className="text-white/40 text-xs">Select restaurants to list &quot;{selectedItemForSync.name}&quot;</p>
-              </div>
-            </div>
-
-            <div className="p-8 space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar">
-              {restaurants?.map((res: Restaurant) => (
-                <button 
-                  key={res._id}
-                  onClick={() => {
-                    if (syncedRestaurants.includes(res._id)) {
-                      setSyncedRestaurants(syncedRestaurants.filter(id => id !== res._id));
-                    } else {
-                      setSyncedRestaurants([...syncedRestaurants, res._id]);
-                    }
-                  }}
-                  className={`w-full p-4 rounded-2xl border transition-all flex items-center justify-between group ${syncedRestaurants.includes(res._id) ? 'bg-[#98E32F]/10 border-[#98E32F]/30 text-white' : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Store size={18} />
-                    <span className="font-bold text-sm tracking-tight">{res.name}</span>
-                  </div>
-                  <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${syncedRestaurants.includes(res._id) ? 'bg-[#98E32F] border-[#98E32F] text-[#013644]' : 'border-white/10 group-hover:border-white/20'}`}>
-                    {syncedRestaurants.includes(res._id) && <Check size={14} strokeWidth={4} />}
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <div className="p-8 border-t border-white/5 flex items-center justify-end gap-4">
-              <button 
-                onClick={() => setSelectedItemForSync(null)}
-                className="px-6 py-3 rounded-2xl font-bold text-white/40 hover:text-white"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={() => handleSync(selectedItemForSync._id)}
-                disabled={assignToRestaurants.isPending}
-                className="bg-[#98E32F] text-[#013644] px-10 py-3 rounded-2xl font-black text-sm hover:shadow-[0_0_30px_rgba(152,227,47,0.4)] transition-all flex items-center gap-2 disabled:opacity-50"
-              >
-                {assignToRestaurants.isPending ? <Loader2 className="animate-spin" size={18} /> : 'Sync Selection'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       {/* Category Management Modal */}
       {isCategoryModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
