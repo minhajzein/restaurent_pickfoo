@@ -12,6 +12,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'deveznan.s3.ap-south-1.amazonaws.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'pickfoo-storage.s3.ap-south-1.amazonaws.com',
+      },
     ],
   },
 };

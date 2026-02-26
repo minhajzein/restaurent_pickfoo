@@ -174,8 +174,8 @@ export default function OwnerTransactionsPage() {
                 transactions?.map((tx) => (
                   <tr key={tx._id} className="group hover:bg-white/[0.02] transition-colors">
                     <td className="px-8 py-6">
-                      <p className="text-sm font-bold">{format(new Date(tx.createdAt), 'MMM dd, yyyy')}</p>
-                      <p className="text-[10px] text-white/30 font-medium uppercase tracking-tighter">{format(new Date(tx.createdAt), 'hh:mm a')}</p>
+                      <p suppressHydrationWarning className="text-sm font-bold">{format(new Date(tx.createdAt), 'MMM dd, yyyy')}</p>
+                      <p suppressHydrationWarning className="text-[10px] text-white/30 font-medium uppercase tracking-tighter">{format(new Date(tx.createdAt), 'hh:mm a')}</p>
                     </td>
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-3">

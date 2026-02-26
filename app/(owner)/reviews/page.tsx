@@ -116,10 +116,6 @@ export default function OwnerReviewsPage() {
                 />
               </div>
               <button className="w-full bg-[#013644] border border-white/10 rounded-xl px-4 py-3 text-sm font-medium flex items-center justify-between hover:border-[#98E32F]/30 transition-all text-white/60 hover:text-white">
-                <span className="flex items-center gap-2"><Store size={14} /> All Restaurants</span>
-                <ChevronDown size={14} />
-              </button>
-              <button className="w-full bg-[#013644] border border-white/10 rounded-xl px-4 py-3 text-sm font-medium flex items-center justify-between hover:border-[#98E32F]/30 transition-all text-white/60 hover:text-white">
                 <span className="flex items-center gap-2"><Calendar size={14} /> Last 30 Days</span>
                 <ChevronDown size={14} />
               </button>
@@ -174,8 +170,8 @@ export default function OwnerReviewsPage() {
                           ))}
                         </div>
                         <span className="text-[10px] text-white/20 font-bold">•</span>
-                        <span className="text-[10px] text-white/40 font-medium">
-                          {isMounted ? formatDistanceToNow(new Date(review.createdAt), { addSuffix: true }) : '...'}
+                        <span suppressHydrationWarning className="text-[10px] text-white/40 font-medium">
+                          {isMounted ? formatDistanceToNow(new Date(review.createdAt), { addSuffix: true }) : '—'}
                         </span>
                       </div>
                     </div>
