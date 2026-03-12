@@ -14,7 +14,11 @@ export const uploadFile = async (file: File, folder: string = 'general') => {
       },
     });
 
-    return data.data.fileUrl;
+    // Backend now returns:
+    // - fileUrl: stable CloudFront/S3 URL (non-expiring)
+    // - staticUrl: same stable URL for DB storage
+    // Prefer staticUrl for clarity.
+    return data.data.staticUrl ?? data.data.fileUrl;
   } catch (error) {
     console.error('Upload failed:', error);
     throw error;

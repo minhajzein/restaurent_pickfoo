@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'pickfoo-storage.s3.ap-south-1.amazonaws.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'd97x56wxmthjz.cloudfront.net', 
+      },
     ],
   },
 };
