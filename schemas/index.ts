@@ -41,15 +41,26 @@ export const menuItemSchema = z.object({
   name: z.string().min(2, 'Item name must be at least 2 characters'),
   description: z.string().min(10, 'Description is required'),
   price: z.number().min(0, 'Price cannot be negative'),
-  variants: z.array(z.object({
-    name: z.string().min(1, 'Variant name is required'),
-    price: z.number().min(0, 'Variant price cannot be negative'),
-  })).optional(),
+  variants: z
+    .array(
+      z.object({
+        name: z.string().min(1, 'Variant name is required'),
+        price: z.number().min(0, 'Variant price cannot be negative'),
+      }),
+    )
+    .optional(),
   category: z.string().min(1, 'Category is required'),
+  type: z.enum(['breakfast', 'lunch', 'dinner']).default('lunch'),
+  preparationTime: z
+    .number()
+    .min(0, 'Time to make cannot be negative')
+    .default(0),
   isVeg: z.boolean(),
   isActive: z.boolean(),
   image: z.string().optional(),
-  ingredients: z.array(z.string().min(1, 'Ingredient name is required')).optional(),
+  ingredients: z
+    .array(z.string().min(1, 'Ingredient name is required'))
+    .optional(),
 });
 
 export type MenuItemFormData = z.infer<typeof menuItemSchema>;

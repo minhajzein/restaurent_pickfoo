@@ -18,14 +18,13 @@ import {
   Loader2,
   Check
 } from 'lucide-react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { menuItemSchema, type MenuItemFormData } from '@/schemas';
 import { useMenu } from '@/hooks/useMenu';
 import { useRestaurants } from '@/hooks/useRestaurants';
 import { useCategories } from '@/hooks/useCategories';
 import { toast } from 'sonner';
-import { Restaurant } from '@/types/restaurant';
 import { MenuItem } from '@/types/menu';
 import { uploadFile } from '@/lib/upload';
 
@@ -79,20 +78,22 @@ export default function OwnerMenuPage() {
     watch,
     setValue,
     formState: { errors, isSubmitting },
-    control // Add control to destructured properties
+    control, // Add control to destructured properties
   } = useForm<MenuItemFormData>({
-    resolver: zodResolver(menuItemSchema),
+    resolver: zodResolver(menuItemSchema) as any,
     defaultValues: {
       name: '',
       description: '',
       category: '',
+      type: 'lunch',
+       preparationTime: 0,
       price: 0,
       variants: [],
       isVeg: true,
       isActive: true,
       image: '',
       ingredients: [],
-    }
+    },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -112,7 +113,14 @@ export default function OwnerMenuPage() {
     setValue('name', item.name);
     setValue('description', item.description);
     setValue('category', item.category);
+    // Keep price from backend (already lowest variant price)
     setValue('price', item.price);
+    if (item.type) {
+      setValue('type', item.type);
+    }
+    if (typeof (item as any).preparationTime === 'number') {
+      setValue('preparationTime', (item as any).preparationTime);
+    }
     setValue('isVeg', item.isVeg);
     setValue('isActive', item.isActive);
     setValue('ingredients', item.ingredients ?? []);
@@ -176,7 +184,7 @@ export default function OwnerMenuPage() {
     }
   };
 
-  const onSubmit = async (data: MenuItemFormData) => {
+  const onSubmit: SubmitHandler<MenuItemFormData> = async (data) => {
     try {
       if (editingItemId) {
         await updateMenuItem.mutateAsync({ id: editingItemId, data });
@@ -279,6 +287,11 @@ export default function OwnerMenuPage() {
                           <div className={`w-full h-full rounded-full ${item.isVeg ? 'bg-green-500' : 'bg-red-500'}`} />
                         </div>
                       </div>
+                      {item.type && (
+                        <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">
+                          {item.type}
+                        </p>
+                      )}
                       <p className="text-white/40 text-xs truncate">{item.category}</p>
                     </div>
                     <div>
@@ -308,6 +321,11 @@ export default function OwnerMenuPage() {
                   </div>
 
                   <div className="mt-2 flex flex-wrap gap-1.5 h-16 overflow-y-auto custom-scrollbar content-start">
+                    {typeof (item as any).preparationTime === 'number' && (item as any).preparationTime > 0 && (
+                      <span className="text-[10px] text-white/50 bg-white/5 border border-white/5 px-2 py-1 rounded-lg flex items-center gap-1 w-fit">
+                        ⏱ {(item as any).preparationTime} min
+                      </span>
+                    )}
                     {restaurants?.length === 1 && (
                       <span className="text-[10px] text-white/40 bg-white/5 border border-white/5 px-2 py-1 rounded-lg flex items-center gap-1 w-fit">
                         <Store size={10} /> On your menu
@@ -487,6 +505,16 @@ export default function OwnerMenuPage() {
                           </div>
                           {errors.price && <p className="text-red-500 text-[10px] mt-1 ml-1 font-bold italic">{errors.price.message}</p>}
                         </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-white/30 mb-2 block uppercase tracking-wider ml-1">Time to make (mins)</label>
+                          <input
+                            {...register('preparationTime', { valueAsNumber: true })}
+                            type="number"
+                            min={0}
+                            className="w-full bg-white/5 border rounded-2xl px-4 py-3.5 focus:bg-[#98E32F]/5 outline-none transition-all border-white/10 focus:border-[#98E32F]/50"
+                            placeholder="e.g. 15"
+                          />
+                        </div>
                       </div>
 
                       {/* Variants Section */}
@@ -636,21 +664,54 @@ export default function OwnerMenuPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <label className="text-[10px] font-bold text-white/30 mb-3 block uppercase tracking-wider ml-1">Meal Type</label>
+                        <div className="bg-white/5 p-1.5 rounded-2xl border border-white/5 flex gap-2">
+                          {(
+                            [
+                              { key: 'breakfast', label: 'Breakfast' },
+                              { key: 'lunch', label: 'Lunch' },
+                              { key: 'dinner', label: 'Dinner' },
+                            ] as const
+                          ).map((opt) => (
+                            <button
+                              key={opt.key}
+                              type="button"
+                              onClick={() => setValue('type', opt.key)}
+                              className={`flex-1 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
+                                watch('type') === opt.key
+                                  ? 'bg-[#98E32F] text-[#013644] shadow-[0_0_20px_rgba(152,227,47,0.2)]'
+                                  : 'text-white/40 hover:text-white hover:bg-white/5'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                       <div>
                         <label className="text-[10px] font-bold text-white/30 mb-3 block uppercase tracking-wider ml-1">Dietary Type</label>
                         <div className="bg-white/5 p-1.5 rounded-2xl border border-white/5 flex gap-2">
-                          <button 
+                          <button
                             type="button"
                             onClick={() => setValue('isVeg', true)}
-                            className={`flex-1 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${watch('isVeg') ? 'bg-[#98E32F] text-[#013644] shadow-[0_0_20px_rgba(152,227,47,0.2)]' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                            className={`flex-1 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${
+                              watch('isVeg')
+                                ? 'bg-[#98E32F] text-[#013644] shadow-[0_0_20px_rgba(152,227,47,0.2)]'
+                                : 'text-white/40 hover:text-white hover:bg-white/5'
+                            }`}
                           >
                             Veg
                           </button>
-                          <button 
+                          <button
                             type="button"
                             onClick={() => setValue('isVeg', false)}
-                            className={`flex-1 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${!watch('isVeg') ? 'bg-[#98E32F] text-[#013644] shadow-[0_0_20px_rgba(152,227,47,0.2)]' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                            className={`flex-1 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${
+                              !watch('isVeg')
+                                ? 'bg-[#98E32F] text-[#013644] shadow-[0_0_20px_rgba(152,227,47,0.2)]'
+                                : 'text-white/40 hover:text-white hover:bg-white/5'
+                            }`}
                           >
                             Non-Veg
                           </button>
@@ -659,17 +720,25 @@ export default function OwnerMenuPage() {
                       <div>
                         <label className="text-[10px] font-bold text-white/30 mb-3 block uppercase tracking-wider ml-1">Serving Availability</label>
                         <div className="bg-white/5 p-1.5 rounded-2xl border border-white/5 flex gap-2">
-                          <button 
+                          <button
                             type="button"
                             onClick={() => setValue('isActive', true)}
-                            className={`flex-1 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${watch('isActive') ? 'bg-[#98E32F]/20 text-[#98E32F] border border-[#98E32F]/20' : 'text-white/40 hover:bg-white/10'}`}
+                            className={`flex-1 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${
+                              watch('isActive')
+                                ? 'bg-[#98E32F]/20 text-[#98E32F] border border-[#98E32F]/20'
+                                : 'text-white/40 hover:bg-white/10'
+                            }`}
                           >
                             Active
                           </button>
-                          <button 
+                          <button
                             type="button"
                             onClick={() => setValue('isActive', false)}
-                            className={`flex-1 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${!watch('isActive') ? 'bg-[#98E32F]/20 text-[#98E32F] border border-[#98E32F]/20' : 'text-white/40 hover:bg-white/10'}`}
+                            className={`flex-1 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${
+                              !watch('isActive')
+                                ? 'bg-[#98E32F]/20 text-[#98E32F] border border-[#98E32F]/20'
+                                : 'text-white/40 hover:bg-white/10'
+                            }`}
                           >
                             Draft
                           </button>
