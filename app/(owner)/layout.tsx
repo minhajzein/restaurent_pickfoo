@@ -125,7 +125,20 @@ export default function OwnerLayout({
           },
         });
 
-        // Play notification sound
+        const audio = new Audio("/notification.mp3");
+        audio.play().catch(() => {});
+      },
+    );
+
+    // Generic notification channel backed by Notification model
+    socket.on(
+      "notification:new",
+      (data: { id: string; title: string; message: string; type: string }) => {
+        toast.message(data.title || "Notification", {
+          description: data.message,
+          icon: <Bell className="h-5 w-5 text-[#98E32F]" />,
+          duration: 8000,
+        });
         const audio = new Audio("/notification.mp3");
         audio.play().catch(() => {});
       },
