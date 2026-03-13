@@ -51,7 +51,7 @@ export default function OwnerMenuPage() {
 
   const { useMyMenu, createMenuItem, updateMenuItem, deleteMenuItem, assignToRestaurants } = useMenu();
   const { useMyRestaurants } = useRestaurants();
-  const { useMyCategories, createCategory, updateCategory, deleteCategory } = useCategories();
+  const { useMyCategories, createCategory, updateCategory } = useCategories();
   
   const { data: menuItems, isLoading: isMenuLoading } = useMyMenu();
   const { data: restaurants } = useMyRestaurants();
@@ -156,10 +156,7 @@ export default function OwnerMenuPage() {
     try {
       if (deleteConfirmation.type === 'item') {
         await deleteMenuItem.mutateAsync(deleteConfirmation.id);
-         toast.success('Menu item deleted');
-      } else if (deleteConfirmation.type === 'category') {
-        await deleteCategory.mutateAsync(deleteConfirmation.id);
-        toast.success('Category deleted');
+        toast.success('Menu item deleted');
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Failed to delete');
@@ -1022,19 +1019,6 @@ export default function OwnerMenuPage() {
                                     className="p-2 text-white/20 hover:text-[#98E32F] hover:bg-[#98E32F]/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
                                   >
                                     <Edit2 size={16} />
-                                  </button>
-                                  <button 
-                                    onClick={() => {
-                                      setDeleteConfirmation({
-                                        isOpen: true,
-                                        type: 'category',
-                                        id: cat._id,
-                                        name: cat.name
-                                      });
-                                    }}
-                                    className="p-2 text-white/20 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
-                                  >
-                                    <Trash2 size={16} />
                                   </button>
                                 </>
                               )}

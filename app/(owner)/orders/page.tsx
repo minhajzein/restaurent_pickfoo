@@ -1,15 +1,16 @@
 'use client';
 
-import { 
-  ClipboardList, 
-  Clock, 
-  MapPin, 
-  User, 
+import {
+  ClipboardList,
+  Clock,
+  MapPin,
+  User,
   Store,
   CheckCircle2,
   Package,
-  Truck,
-  ExternalLink
+  ExternalLink,
+  Bike,
+  ShoppingBag
 } from 'lucide-react';
 import { useOrders, Order, OrderItem } from '@/hooks/useOrders';
 import { toast } from 'sonner';
@@ -19,9 +20,9 @@ export default function OwnerOrdersPage() {
   const { useMyOrders, updateOrderStatus } = useOrders();
   const { data: orders, isLoading } = useMyOrders();
 
-  const handleStatusUpdate = async (id: string, newStatus: string) => {
+  const handleStatusUpdate = async (id: string, newStatus: string, orderType?: 'pickup' | 'delivery') => {
     try {
-      await updateOrderStatus.mutateAsync({ id, status: newStatus });
+      await updateOrderStatus.mutateAsync({ id, status: newStatus, orderType });
       toast.success(`Order status updated to ${newStatus}`);
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;
@@ -33,6 +34,7 @@ export default function OwnerOrdersPage() {
     'pending': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
     'confirmed': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     'preparing': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+    'ready': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
     'out-for-delivery': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
     'delivered': 'bg-[#98E32F]/10 text-[#98E32F] border-[#98E32F]/20',
     'cancelled': 'bg-red-500/10 text-red-500 border-red-500/20'
@@ -42,7 +44,8 @@ export default function OwnerOrdersPage() {
     switch (status) {
       case 'pending': return <Clock size={14} />;
       case 'preparing': return <Package size={14} />;
-      case 'out-for-delivery': return <Truck size={14} />;
+      case 'ready': return <CheckCircle2 size={14} />;
+      case 'out-for-delivery': return <CheckCircle2 size={14} />;
       case 'delivered': return <CheckCircle2 size={14} />;
       default: return <Clock size={14} />;
     }
@@ -81,6 +84,12 @@ export default function OwnerOrdersPage() {
                       {getStatusIcon(order.status)}
                       {order.status.replace(/-/g, ' ')}
                     </div>
+                    {order.orderType && (
+                      <div className="px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border border-white/10 bg-white/5 text-white/70 flex items-center gap-1">
+                        {order.orderType === 'pickup' ? <Bike size={12} /> : <ShoppingBag size={12} />}
+                        {order.orderType === 'pickup' ? 'Pickup (Pickfoo partner)' : 'Delivery (Restaurant)'}
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -133,27 +142,27 @@ export default function OwnerOrdersPage() {
                       </button>
                     )}
                     {order.status === 'confirmed' && (
-                      <button 
-                        onClick={() => handleStatusUpdate(order._id, 'preparing')}
-                        className="bg-[#98E32F] text-[#013644] px-4 py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all whitespace-nowrap"
-                      >
-                        Prepare
-                      </button>
+                      <>
+                        <button 
+                          onClick={() => handleStatusUpdate(order._id, 'preparing', 'pickup')}
+                          className="bg-[#98E32F] text-[#013644] px-4 py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all whitespace-nowrap"
+                        >
+                          Prepare • Pickup
+                        </button>
+                        <button 
+                          onClick={() => handleStatusUpdate(order._id, 'preparing', 'delivery')}
+                          className="bg-white/10 text-white px-4 py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all whitespace-nowrap border border-white/20"
+                        >
+                          Prepare • Delivery
+                        </button>
+                      </>
                     )}
                     {order.status === 'preparing' && (
                       <button 
-                        onClick={() => handleStatusUpdate(order._id, 'out-for-delivery')}
+                        onClick={() => handleStatusUpdate(order._id, 'ready')}
                         className="bg-[#98E32F] text-[#013644] px-4 py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all whitespace-nowrap"
                       >
-                        Ship
-                      </button>
-                    )}
-                    {order.status === 'out-for-delivery' && (
-                      <button 
-                        onClick={() => handleStatusUpdate(order._id, 'delivered')}
-                        className="bg-[#98E32F] text-[#013644] px-4 py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all whitespace-nowrap"
-                      >
-                        Deliver
+                        Mark Ready
                       </button>
                     )}
                     <button className="p-2 sm:p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 text-white/30 hover:text-white transition-all">
