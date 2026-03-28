@@ -87,6 +87,7 @@ export default function OwnerMenuPage() {
       category: '',
       type: 'lunch',
        preparationTime: 0,
+      packingCharge: 0,
       price: 0,
       variants: [],
       isVeg: true,
@@ -120,6 +121,11 @@ export default function OwnerMenuPage() {
     }
     if (typeof (item as any).preparationTime === 'number') {
       setValue('preparationTime', (item as any).preparationTime);
+    }
+    if (typeof (item as any).packingCharge === 'number') {
+      setValue('packingCharge', (item as any).packingCharge);
+    } else {
+      setValue('packingCharge', 0);
     }
     setValue('isVeg', item.isVeg);
     setValue('isActive', item.isActive);
@@ -323,6 +329,11 @@ export default function OwnerMenuPage() {
                         ⏱ {(item as any).preparationTime} min
                       </span>
                     )}
+                    {typeof (item as any).packingCharge === 'number' && (item as any).packingCharge > 0 && (
+                      <span className="text-[10px] text-white/50 bg-white/5 border border-white/5 px-2 py-1 rounded-lg flex items-center gap-1 w-fit">
+                        📦 Packing +₹{(item as any).packingCharge}
+                      </span>
+                    )}
                     {restaurants?.length === 1 && (
                       <span className="text-[10px] text-white/40 bg-white/5 border border-white/5 px-2 py-1 rounded-lg flex items-center gap-1 w-fit">
                         <Store size={10} /> On your menu
@@ -511,6 +522,21 @@ export default function OwnerMenuPage() {
                             className="w-full bg-white/5 border rounded-2xl px-4 py-3.5 focus:bg-[#98E32F]/5 outline-none transition-all border-white/10 focus:border-[#98E32F]/50"
                             placeholder="e.g. 15"
                           />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-white/30 mb-2 block uppercase tracking-wider ml-1">Packing charge (per unit)</label>
+                          <div className="relative group">
+                            <IndianRupee className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${errors.packingCharge ? 'text-red-500' : 'text-white/20 group-focus-within:text-[#98E32F]'}`} size={18} />
+                            <input
+                              {...register('packingCharge', { valueAsNumber: true })}
+                              type="number"
+                              min={0}
+                              step="0.01"
+                              className={`w-full bg-white/5 border rounded-2xl pl-12 pr-4 py-3.5 focus:bg-[#98E32F]/5 outline-none transition-all ${errors.packingCharge ? 'border-red-500/50' : 'border-white/10 focus:border-[#98E32F]/50'}`}
+                              placeholder="0 = none"
+                            />
+                          </div>
+                          {errors.packingCharge && <p className="text-red-500 text-[10px] mt-1 ml-1 font-bold italic">{errors.packingCharge.message}</p>}
                         </div>
                       </div>
 

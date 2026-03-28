@@ -5,9 +5,10 @@ import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import api from '@/lib/axios';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -32,12 +33,20 @@ export default function LoginPage() {
   
   const { setAuth, isAuthenticated, isInitialized } = useAuthStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (isInitialized && isAuthenticated) {
       router.push('/');
     }
   }, [isInitialized, isAuthenticated, router]);
+
+  useEffect(() => {
+    if (searchParams.get('reset') === 'success') {
+      toast.success('Password reset successfully. Sign in with your new password.');
+      router.replace('/login');
+    }
+  }, [searchParams, router]);
 
   const {
     register,
@@ -155,6 +164,14 @@ export default function LoginPage() {
               {errors.password && (
                 <p className="text-xs text-red-500 ml-1">{errors.password.message}</p>
               )}
+              <div className="flex justify-end">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-zinc-400 hover:text-primary transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
             </div>
           </div>
 

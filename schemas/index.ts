@@ -55,6 +55,10 @@ export const menuItemSchema = z.object({
     .number()
     .min(0, 'Time to make cannot be negative')
     .default(0),
+  packingCharge: z
+    .number()
+    .min(0, 'Packing charge cannot be negative')
+    .default(0),
   isVeg: z.boolean(),
   isActive: z.boolean(),
   image: z.string().optional(),
