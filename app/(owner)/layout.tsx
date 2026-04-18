@@ -84,13 +84,14 @@ export default function OwnerLayout({
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
-    // Connect to Restaurant Backend (port 5000)
-    const socket = io(
-      process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000",
-      {
-        withCredentials: true,
-      },
-    );
+    const socketUrl =
+      process.env.NEXT_PUBLIC_SOCKET_URL || "https://api.pickfoo.in";
+    const socketPath =
+      process.env.NEXT_PUBLIC_SOCKET_IO_PATH || "/restaurant/socket.io";
+    const socket = io(socketUrl, {
+      path: socketPath,
+      withCredentials: true,
+    });
 
     socket.on("connect", () => {
       console.log("Connected to notification service");
