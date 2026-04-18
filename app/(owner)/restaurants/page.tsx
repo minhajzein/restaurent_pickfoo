@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import {
@@ -264,7 +264,7 @@ const ScheduleModal = ({
   );
 };
 
-export default function OwnerRestaurantsPage() {
+function OwnerRestaurantsPageContent() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{
     lat: number;
@@ -1476,5 +1476,19 @@ export default function OwnerRestaurantsPage() {
         isDangerous={true}
       />
     </div>
+  );
+}
+
+export default function OwnerRestaurantsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <OwnerRestaurantsPageContent />
+    </Suspense>
   );
 }
