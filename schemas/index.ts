@@ -65,6 +65,8 @@ export const menuItemSchema = z.object({
   ingredients: z
     .array(z.string().min(1, 'Ingredient name is required'))
     .optional(),
+  /** Set on submit for menu create (one restaurant per owner). */
+  restaurantId: z.string().optional(),
 });
 
 export type MenuItemFormData = z.infer<typeof menuItemSchema>;

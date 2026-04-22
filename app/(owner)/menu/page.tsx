@@ -49,12 +49,14 @@ export default function OwnerMenuPage() {
     name: ''
   });
 
-  const { useMyMenu, createMenuItem, updateMenuItem, deleteMenuItem, assignToRestaurants } = useMenu();
+  const { useMyMenu, createMenuItem, updateMenuItem, deleteMenuItem } = useMenu();
   const { useMyRestaurants } = useRestaurants();
   const { useMyCategories, createCategory, updateCategory } = useCategories();
   
   const { data: menuItems, isLoading: isMenuLoading } = useMyMenu();
   const { data: restaurants } = useMyRestaurants();
+  /** Product model: one restaurant per owner; API still returns an array. */
+  const ownerRestaurant = restaurants?.[0];
   const { data: categories } = useMyCategories();
 
   // ... (keep categories state) ...
@@ -193,14 +195,14 @@ export default function OwnerMenuPage() {
         await updateMenuItem.mutateAsync({ id: editingItemId, data });
         toast.success('Menu item updated successfully!');
       } else {
-        const created = await createMenuItem.mutateAsync(data);
-        // Auto-assign new item to the owner's single restaurant
-        if (restaurants?.length === 1 && created?._id) {
-          await assignToRestaurants.mutateAsync({
-            id: created._id,
-            restaurantIds: [restaurants[0]._id],
-          });
+        if (!ownerRestaurant) {
+          toast.error('Create your restaurant profile before adding menu items.');
+          return;
         }
+        await createMenuItem.mutateAsync({
+          ...data,
+          restaurantId: ownerRestaurant._id,
+        });
         toast.success('Menu item added successfully!');
       }
       handleCloseModal();
@@ -334,7 +336,7 @@ export default function OwnerMenuPage() {
                         📦 Packing +₹{(item as any).packingCharge}
                       </span>
                     )}
-                    {restaurants?.length === 1 && (
+                    {ownerRestaurant && (
                       <span className="text-[10px] text-white/40 bg-white/5 border border-white/5 px-2 py-1 rounded-lg flex items-center gap-1 w-fit">
                         <Store size={10} /> On your menu
                       </span>
