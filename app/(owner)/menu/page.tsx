@@ -848,7 +848,7 @@ export default function OwnerMenuPage() {
                       }`}
                     >
                       {newCategoryImage ? (
-                        <Image src={newCategoryImage} alt="Cat" width={56} height={56} className="w-full h-full object-cover" />
+                        <Image src={newCategoryImage} alt="New category image preview" width={56} height={56} className="w-full h-full object-cover" />
                       ) : (
                         <ImageIcon size={18} className="text-white/20" />
                       )}

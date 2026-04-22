@@ -8,17 +8,24 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
+      // User uploads (S3 / CloudFront) use bucket + region + optional custom base URL from env.
+      // Wildcards avoid broken previews whenever S3_PUBLIC_BASE_URL / CLOUDFRONT_URL changes.
       {
         protocol: 'https',
-        hostname: 'deveznan.s3.ap-south-1.amazonaws.com',
+        hostname: '**.amazonaws.com',
       },
       {
         protocol: 'https',
-        hostname: 'pickfoo-storage.s3.ap-south-1.amazonaws.com',
+        hostname: '**.cloudfront.net',
+      },
+      // Local MinIO or similar during development
+      {
+        protocol: 'http',
+        hostname: 'localhost',
       },
       {
-        protocol: 'https',
-        hostname: 'd97x56wxmthjz.cloudfront.net', 
+        protocol: 'http',
+        hostname: '127.0.0.1',
       },
     ],
   },
