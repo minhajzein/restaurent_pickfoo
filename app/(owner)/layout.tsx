@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -19,9 +20,10 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import { toast } from "sonner";
 import api from "@/lib/axios";
+import { NewOrderModal, IncomingOrder } from "@/components/NewOrderModal";
 
 export default function OwnerLayout({
   children,
@@ -30,10 +32,14 @@ export default function OwnerLayout({
 }) {
   const { user, isAuthenticated, isInitialized, logout } = useAuthStore();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [incomingOrder, setIncomingOrder] = useState<IncomingOrder | null>(null);
+  const socketRef = useRef<Socket | null>(null);
+  const pendingOrderIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (isInitialized && (!isAuthenticated || user?.role !== "owner")) {
@@ -92,22 +98,60 @@ export default function OwnerLayout({
       path: socketPath,
       withCredentials: true,
     });
+    socketRef.current = socket;
 
     socket.on("connect", () => {
-      console.log("Connected to notification service");
+      console.log("[layout-socket] connected");
       if (user?.id) {
-        // Build the room name using the user ID (which corresponds to ownerId in backend)
         socket.emit("join-owner-room", user.id);
       }
     });
 
+    socket.on("reconnect", () => {
+      if (user?.id) socket.emit("join-owner-room", user.id);
+    });
+
+    // ── NEW ORDER → show ringing modal + refresh orders list ──────────────
+    socket.on(
+      "order:owner:new-request",
+      (data: {
+        orderId: string;
+        totalAmount?: number;
+        itemsSummary?: Array<{ name: string; quantity: number }>;
+        orderDate?: string;
+        userId?: string;
+        restaurantId?: string;
+      }) => {
+        pendingOrderIdRef.current = data.orderId;
+        setIncomingOrder({
+          orderId: data.orderId,
+          totalAmount: data.totalAmount ?? 0,
+          itemsSummary: data.itemsSummary ?? [],
+          userId: data.userId,
+          restaurantId: data.restaurantId,
+          orderDate: data.orderDate,
+        });
+        // Also refresh the orders list so the new order appears immediately
+        queryClient.invalidateQueries({ queryKey: ['my-orders'] });
+      }
+    );
+
+    // ── STATUS UPDATE → refresh orders list live ─────────────────────────
+    socket.on(
+      "order:owner:status-updated",
+      (data: { orderId: string; status: string }) => {
+        queryClient.invalidateQueries({ queryKey: ['my-orders'] });
+        if (data.status === 'confirmed') {
+          toast.success(`Order #${data.orderId?.slice(-6)} — Payment confirmed! Ready to prepare.`);
+        }
+      }
+    );
+
     socket.on(
       "restaurant-status-update",
       (data: { message: string; status: string }) => {
-        // Determine icon based on status
         let Icon = Bell;
         let iconColor = "text-blue-500";
-
         if (data.status === "active" || data.status === "verified") {
           Icon = CheckCircle2;
           iconColor = "text-green-500";
@@ -115,23 +159,17 @@ export default function OwnerLayout({
           Icon = AlertCircle;
           iconColor = "text-red-500";
         }
-
         toast.message("Restaurant Status Update", {
           description: data.message,
           icon: <Icon className={`h-5 w-5 ${iconColor}`} />,
           duration: 8000,
-          action: {
-            label: "View",
-            onClick: () => router.push("/restaurants"),
-          },
+          action: { label: "View", onClick: () => router.push("/restaurants") },
         });
-
         const audio = new Audio("/notification.mp3");
         audio.play().catch(() => {});
-      },
+      }
     );
 
-    // Generic notification channel backed by Notification model
     socket.on(
       "notification:new",
       (data: { id: string; title: string; message: string; type: string }) => {
@@ -142,28 +180,61 @@ export default function OwnerLayout({
         });
         const audio = new Audio("/notification.mp3");
         audio.play().catch(() => {});
-      },
+      }
     );
-
-    // Listen for new orders (future proofing)
-    socket.on("new-order", (data: { orderId: string }) => {
-      toast.message("New Order Received", {
-        description: `New order #${data.orderId ? data.orderId.slice(-6) : ""} received!`,
-        icon: <ClipboardList className="h-5 w-5 text-green-500" />,
-        duration: 10000,
-        action: {
-          label: "View",
-          onClick: () => router.push("/orders"),
-        },
-      });
-      const audio = new Audio("/notification.mp3");
-      audio.play().catch(() => {});
-    });
 
     return () => {
       socket.disconnect();
+      socketRef.current = null;
     };
   }, [isAuthenticated, user, router]);
+
+  // ── Modal handlers ───────────────────────────────────────────────────────
+  const handleOrderAccept = useCallback(
+    async (orderType: "pickup" | "delivery") => {
+      const orderId = pendingOrderIdRef.current;
+      if (!orderId) return;
+      try {
+        await api.put(`/orders/${orderId}/decision`, {
+          decision: "accepted",
+          orderType,
+        });
+        toast.success("✅ Order accepted! Customer notified.");
+      } catch {
+        toast.error("Failed to accept order. Try from the Orders page.");
+      } finally {
+        setTimeout(() => {
+          setIncomingOrder(null);
+          pendingOrderIdRef.current = null;
+        }, 1500);
+      }
+    },
+    []
+  );
+
+  const handleOrderReject = useCallback(async () => {
+    const orderId = pendingOrderIdRef.current;
+    if (!orderId) return;
+    try {
+      await api.put(`/orders/${orderId}/decision`, {
+        decision: "rejected",
+        reason: "Restaurant is unable to fulfill this order right now.",
+      });
+      toast.info("Order rejected. Customer has been notified.");
+    } catch {
+      toast.error("Failed to reject order. Try from the Orders page.");
+    } finally {
+      setTimeout(() => {
+        setIncomingOrder(null);
+        pendingOrderIdRef.current = null;
+      }, 1500);
+    }
+  }, []);
+
+  const handleModalClose = useCallback(() => {
+    setIncomingOrder(null);
+    pendingOrderIdRef.current = null;
+  }, []);
 
   if (!isInitialized || !user || user.role !== "owner") {
     return (
@@ -184,6 +255,14 @@ export default function OwnerLayout({
 
   return (
     <div className="h-dvh bg-[#013644] text-white flex overflow-hidden">
+      {/* Global new-order ringing modal */}
+      <NewOrderModal
+        order={incomingOrder}
+        onAccept={handleOrderAccept}
+        onReject={handleOrderReject}
+        onClose={handleModalClose}
+      />
+
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
         <div

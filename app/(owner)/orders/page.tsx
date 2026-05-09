@@ -10,15 +10,19 @@ import {
   Package,
   ExternalLink,
   Bike,
-  ShoppingBag
+  ShoppingBag,
+  Wifi
 } from 'lucide-react';
 import { useOrders, Order, OrderItem } from '@/hooks/useOrders';
+import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'sonner';
 import { AxiosError } from 'axios';
 
 export default function OwnerOrdersPage() {
-  const { useMyOrders, updateOrderStatus } = useOrders();
-  const { data: orders, isLoading } = useMyOrders();
+  const { useMyOrders, updateOrderStatus, decideOrder } = useOrders();
+  // Poll every 30 s as a safety net — the layout socket drives live invalidation.
+  const { data: orders, isLoading } = useMyOrders({ refetchInterval: 30_000 });
+  const { user } = useAuthStore();
 
   const handleStatusUpdate = async (id: string, newStatus: string, orderType?: 'pickup' | 'delivery') => {
     try {
@@ -30,14 +34,32 @@ export default function OwnerOrdersPage() {
     }
   };
 
+  const handleDecision = async (id: string, decision: 'accepted' | 'rejected', orderType?: 'pickup' | 'delivery') => {
+    try {
+      await decideOrder.mutateAsync({
+        id,
+        decision,
+        orderType,
+        reason: decision === 'rejected' ? 'Restaurant is unable to fulfill this order right now.' : undefined,
+      });
+      toast.success(decision === 'accepted' ? '✅ Order accepted! Customer is being notified.' : 'Order rejected.');
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      toast.error(err.response?.data?.message || 'Failed to process decision');
+    }
+  };
+
   const statusColors: Record<Order['status'], string> = {
+    'awaiting-owner': 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+    'accepted-awaiting-payment': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     'pending': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
     'confirmed': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     'preparing': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
     'ready': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
     'out-for-delivery': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
     'delivered': 'bg-[#98E32F]/10 text-[#98E32F] border-[#98E32F]/20',
-    'cancelled': 'bg-red-500/10 text-red-500 border-red-500/20'
+    'cancelled': 'bg-red-500/10 text-red-500 border-red-500/20',
+    'rejected': 'bg-red-500/10 text-red-500 border-red-500/20',
   };
 
   const getStatusIcon = (status: string) => {
@@ -54,8 +76,14 @@ export default function OwnerOrdersPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col gap-2">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Orders Management</h2>
-        <p className="text-white/60 text-sm sm:text-base">Real-time order tracking and management across all your restaurants.</p>
+        <div className="flex items-center gap-3">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Orders Management</h2>
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-[#98E32F]/10 border border-[#98E32F]/20">
+            <Wifi size={11} className="text-[#98E32F] animate-pulse" />
+            <span className="text-[9px] font-black uppercase tracking-widest text-[#98E32F]">Live</span>
+          </div>
+        </div>
+        <p className="text-white/60 text-sm sm:text-base">Real-time order tracking and management. New orders appear automatically.</p>
       </div>
 
       {isLoading ? (
@@ -133,13 +161,21 @@ export default function OwnerOrdersPage() {
                     <p className="text-xl sm:text-2xl font-black text-[#98E32F]">₹{order.totalAmount}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    {order.status === 'pending' && (
-                      <button 
-                        onClick={() => handleStatusUpdate(order._id, 'confirmed')}
-                        className="bg-[#98E32F] text-[#013644] px-4 py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all whitespace-nowrap"
-                      >
-                        Confirm
-                      </button>
+                    {order.status === 'awaiting-owner' && (
+                      <>
+                        <button
+                          onClick={() => handleDecision(order._id, 'accepted', 'pickup')}
+                          className="bg-[#98E32F] text-[#013644] px-4 py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all whitespace-nowrap"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => handleDecision(order._id, 'rejected')}
+                          className="bg-red-500/20 text-red-400 px-4 py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all whitespace-nowrap border border-red-500/30"
+                        >
+                          Reject
+                        </button>
+                      </>
                     )}
                     {order.status === 'confirmed' && (
                       <>
